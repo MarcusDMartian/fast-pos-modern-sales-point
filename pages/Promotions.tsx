@@ -147,8 +147,8 @@ const Promotions: React.FC = () => {
             key={tab.id}
             onClick={() => setActiveTab(tab.id as PromoTab)}
             className={`px-5 py-3 rounded-2xl font-bold text-sm flex items-center gap-2 transition-all whitespace-nowrap ${activeTab === tab.id
-                ? 'bg-purple-500 text-white shadow-xl shadow-purple-500/20'
-                : 'bg-white/50 text-slate-500 hover:bg-white'
+              ? 'bg-purple-500 text-white shadow-xl shadow-purple-500/20'
+              : 'bg-white/50 text-slate-500 hover:bg-white'
               }`}
           >
             <tab.icon size={16} />
