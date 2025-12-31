@@ -1,0 +1,7 @@
+{
+  "name": "Fast POS - Modern Sales Point",
+  "description": "A high-fidelity POS application designed with a minimalist UI Kit, featuring product management, category filtering, and a robust checkout flow.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
