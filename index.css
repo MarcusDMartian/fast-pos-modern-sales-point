@@ -1,6 +1,17 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@source "./pages/**/*.tsx";
+@source "./components/**/*.tsx";
+@source "./*.tsx";
+@source "./index.html";
+
+@theme {
+  --font-family-sans: 'Manrope', system-ui, sans-serif;
+  --color-primary: #F57255;
+  --color-primary-light: #f58f78;
+  --color-primary-glow: rgba(245, 114, 85, 0.15);
+  --color-app: #F5F7FA;
+}
 
 :root {
   /* POS Design System Color Tokens */
