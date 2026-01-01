@@ -21,7 +21,8 @@ const PhysicalCountModal: React.FC<PhysicalCountModalProps> = ({
     const [showOnlyVariance, setShowOnlyVariance] = useState(false);
 
     const filteredProducts = useMemo(() => {
-        let result = products.filter(p => p.type !== 'service');
+        let result = products.filter(p => p.itemType !== 'service');
+
         if (searchQuery) {
             const q = searchQuery.toLowerCase();
             result = result.filter(p => p.name.toLowerCase().includes(q) || p.id.toLowerCase().includes(q));
@@ -52,19 +53,23 @@ const PhysicalCountModal: React.FC<PhysicalCountModalProps> = ({
     const adjustments = useMemo(() => {
         return Object.entries(countItems)
             .filter(([productId, data]) => {
+                const itemData = data as any;
                 const product = products.find(p => p.id === productId);
-                return product && data.actualQty !== product.stock;
+                return product && itemData.actualQty !== product.stock;
             })
+
             .map(([productId, data]) => {
+                const itemData = data as { actualQty: number; note: string };
                 const product = products.find(p => p.id === productId)!;
                 return {
                     productId,
                     systemQty: product.stock,
-                    actualQty: data.actualQty,
-                    variance: data.actualQty - product.stock,
-                    note: data.note
+                    actualQty: itemData.actualQty,
+                    variance: itemData.actualQty - product.stock,
+                    note: itemData.note
                 };
             });
+
     }, [countItems, products]);
 
     const handleConfirm = () => {
@@ -151,8 +156,8 @@ const PhysicalCountModal: React.FC<PhysicalCountModalProps> = ({
                             <div
                                 key={product.id}
                                 className={`p-4 rounded-2xl border flex items-center gap-4 transition-all ${hasVariance
-                                        ? variance > 0 ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50 border-red-200'
-                                        : counted ? 'bg-blue-50 border-blue-200' : 'bg-white/50 border-slate-200'
+                                    ? variance > 0 ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50 border-red-200'
+                                    : counted ? 'bg-blue-50 border-blue-200' : 'bg-white/50 border-slate-200'
                                     }`}
                             >
                                 <img src={product.image} alt={product.name} className="w-14 h-14 rounded-xl object-cover" />

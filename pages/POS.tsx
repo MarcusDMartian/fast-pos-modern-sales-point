@@ -211,9 +211,10 @@ const POS: React.FC = () => {
     //   let inventory: Product[] = JSON.parse(savedInventory); // Removed, now from store
     cartItems.forEach(item => {
       const product = products.find(p => p.id === item.id);
-      if (product && product.type !== 'service') {
+      if (product && product.itemType !== 'service') {
         updateProduct(item.id, { stock: Math.max(0, product.stock - item.quantity) });
       }
+
     });
     //   localStorage.setItem('fastpos_inventory', JSON.stringify(inventory)); // Removed, now from store
     // }

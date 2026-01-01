@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { X, Save, Package, Ruler, FlaskConical, Hash, Layers, ArrowRight, Info, Plus, Trash2, Tag, Calendar, ShoppingBag, Printer, Fingerprint } from 'lucide-react';
-import { Product, ProductType, BOMType, UOM, ProductUOM, BOMItem, BOM } from '../types';
+import { Product, ProductType, ItemType, BOMType, UOM, ProductUOM, BOMItem, BOM } from '../types';
 import { MOCK_UOMS, MOCK_PRODUCTS, MOCK_PRINT_GROUPS } from '../constants';
 import { useStore } from '../store';
 import { formatCurrency, getCurrencySymbol } from '../utils/formatters';
@@ -17,6 +17,8 @@ const AdvancedProductModal: React.FC<AdvancedProductModalProps> = ({ initialProd
   const { enterpriseConfig } = useStore();
   const [activeTab, setActiveTab] = useState<'general' | 'units' | 'bom' | 'inventory'>('general');
   const [productType, setProductType] = useState<ProductType>('retail');
+  const [itemType, setItemType] = useState<ItemType>('finished');
+
 
   // Form State
   const [name, setName] = useState('');
@@ -39,7 +41,9 @@ const AdvancedProductModal: React.FC<AdvancedProductModalProps> = ({ initialProd
       setPrice(initialProduct.price.toString());
       setHasLotTracking(initialProduct.hasLotTracking);
       setPrintGroupId(initialProduct.printGroupId || '');
+      setItemType(initialProduct.itemType || 'finished');
       if (initialProduct.bom) {
+
         setBomItems(initialProduct.bom.items);
       }
     }
@@ -92,6 +96,7 @@ const AdvancedProductModal: React.FC<AdvancedProductModalProps> = ({ initialProd
       name,
       category,
       type: productType,
+      itemType: itemType,
       baseUOMId: baseUOM,
       units: [
         { uomId: baseUOM, type: 'base', conversionFactor: 1, price: parseFloat(price), isDefault: true },
@@ -103,16 +108,28 @@ const AdvancedProductModal: React.FC<AdvancedProductModalProps> = ({ initialProd
       printGroupId: printGroupId || undefined,
       status: initialProduct?.status || 'active'
     });
+
   };
 
   const getTypeLabel = (type: ProductType) => {
     switch (type) {
-      case 'retail': return t('inventory.type_raw');
-      case 'fnb': return t('inventory.type_finished');
+      case 'retail': return t('inventory.type_retail');
+      case 'fnb': return t('inventory.type_fnb');
       case 'service': return t('inventory.type_service');
       default: return type;
     }
   }
+
+  const getItemTypeLabel = (type: ItemType) => {
+    switch (type) {
+      case 'finished': return t('inventory.item_finished');
+      case 'semi_finished': return t('inventory.item_semi_finished');
+      case 'raw_material': return t('inventory.item_raw');
+      case 'service': return t('inventory.item_service');
+      default: return type;
+    }
+  }
+
 
   return (
     <div className="fixed inset-0 z-[300] flex items-center justify-center bg-[var(--primary-700)]/30 backdrop-blur-md p-4 animate-in fade-in duration-200">
@@ -176,19 +193,39 @@ const AdvancedProductModal: React.FC<AdvancedProductModalProps> = ({ initialProd
               <div className="space-y-4">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-2">{t('inventory.advanced.business_type')}</label>
                 <div className="grid grid-cols-3 gap-4">
-                  {(['retail', 'service', 'fnb'] as ProductType[]).map(type => (
+                  {(['retail', 'fnb', 'service'] as ProductType[]).map(type => (
                     <button
                       key={type}
+                      type="button"
                       onClick={() => setProductType(type)}
                       className={`p-6 rounded-[2rem] border-2 flex flex-col items-center gap-3 transition-all ${productType === type ? 'border-[var(--primary-600)] bg-blue-50/20 text-[var(--primary-600)]' : 'border-gray-50 text-gray-400'
                         }`}
                     >
                       <Layers size={24} />
-                      <span className="text-[10px] font-black uppercase tracking-widest">{getTypeLabel(type)}</span>
+                      <span className="text-[10px] font-black uppercase tracking-widest text-center">{getTypeLabel(type)}</span>
                     </button>
                   ))}
                 </div>
               </div>
+
+              <div className="space-y-4">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-2">{t('inventory.item_type')}</label>
+                <div className="grid grid-cols-4 gap-4">
+                  {(['finished', 'semi_finished', 'raw_material', 'service'] as ItemType[]).map(type => (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => setItemType(type)}
+                      className={`p-4 rounded-[2rem] border-2 flex flex-col items-center gap-2 transition-all ${itemType === type ? 'border-[var(--primary-600)] bg-blue-50/20 text-[var(--primary-600)]' : 'border-gray-50 text-gray-400'
+                        }`}
+                    >
+                      <Package size={20} />
+                      <span className="text-[9px] font-black uppercase tracking-widest text-center">{getItemTypeLabel(type)}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-3">

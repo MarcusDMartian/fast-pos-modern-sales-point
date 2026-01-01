@@ -37,13 +37,14 @@ const WarehouseTransferModal: React.FC<WarehouseTransferModalProps> = ({
     const [note, setNote] = useState('');
 
     const filteredProducts = useMemo(() => {
-        if (!searchQuery) return products.filter(p => p.type !== 'service');
+        if (!searchQuery) return products.filter(p => p.itemType !== 'service');
         const q = searchQuery.toLowerCase();
         return products.filter(p =>
-            p.type !== 'service' &&
+            p.itemType !== 'service' &&
             (p.name.toLowerCase().includes(q) || p.id.toLowerCase().includes(q))
         );
     }, [products, searchQuery]);
+
 
     const toggleProduct = (productId: string) => {
         const existing = transferItems.find(i => i.productId === productId);
@@ -107,8 +108,8 @@ const WarehouseTransferModal: React.FC<WarehouseTransferModalProps> = ({
                         {[1, 2, 3].map((s) => (
                             <React.Fragment key={s}>
                                 <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all ${s < step ? 'bg-emerald-500 text-white' :
-                                        s === step ? 'bg-primary text-white' :
-                                            'bg-slate-100 text-slate-400'
+                                    s === step ? 'bg-primary text-white' :
+                                        'bg-slate-100 text-slate-400'
                                     }`}>
                                     {s < step ? <Check size={16} /> : s}
                                 </div>
@@ -137,10 +138,10 @@ const WarehouseTransferModal: React.FC<WarehouseTransferModalProps> = ({
                                             onClick={() => setFromWarehouse(wh.id)}
                                             disabled={wh.id === toWarehouse}
                                             className={`p-4 rounded-2xl border text-left transition-all ${fromWarehouse === wh.id
-                                                    ? 'bg-orange-50 border-orange-300'
-                                                    : wh.id === toWarehouse
-                                                        ? 'opacity-30 cursor-not-allowed border-slate-200'
-                                                        : 'bg-white/50 border-slate-200 hover:border-orange-200'
+                                                ? 'bg-orange-50 border-orange-300'
+                                                : wh.id === toWarehouse
+                                                    ? 'opacity-30 cursor-not-allowed border-slate-200'
+                                                    : 'bg-white/50 border-slate-200 hover:border-orange-200'
                                                 }`}
                                         >
                                             <div className="flex items-center gap-3">
@@ -173,10 +174,10 @@ const WarehouseTransferModal: React.FC<WarehouseTransferModalProps> = ({
                                             onClick={() => setToWarehouse(wh.id)}
                                             disabled={wh.id === fromWarehouse}
                                             className={`p-4 rounded-2xl border text-left transition-all ${toWarehouse === wh.id
-                                                    ? 'bg-emerald-50 border-emerald-300'
-                                                    : wh.id === fromWarehouse
-                                                        ? 'opacity-30 cursor-not-allowed border-slate-200'
-                                                        : 'bg-white/50 border-slate-200 hover:border-emerald-200'
+                                                ? 'bg-emerald-50 border-emerald-300'
+                                                : wh.id === fromWarehouse
+                                                    ? 'opacity-30 cursor-not-allowed border-slate-200'
+                                                    : 'bg-white/50 border-slate-200 hover:border-emerald-200'
                                                 }`}
                                         >
                                             <div className="flex items-center gap-3">

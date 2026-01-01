@@ -1,8 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useStore } from '../store';
-import { Product, StockMovement, ProductType } from '../types';
-import { Package, AlertCircle, History, Plus, Search, RefreshCcw, Check, FileText, FlaskConical, Zap, Boxes, ArrowRight, Hash, Info, ChevronRight, X, Clock, User, Tag, Calendar, LayoutList, Download, Upload, Printer, Eye, Edit3, Lock, Unlock, Ruler } from 'lucide-react';
+import { Product, StockMovement, ProductType, ItemType } from '../types';
+import { Package, AlertCircle, History, Plus, Search, RefreshCcw, Check, FileText, FlaskConical, Zap, Boxes, ArrowRight, Hash, Info, ChevronRight, X, Clock, User, Tag, Calendar, LayoutList, Download, Upload, Printer, Eye, Edit3, Lock, Unlock, Ruler, Filter, Layers, ShoppingBag, Utensils } from 'lucide-react';
+
+
 import { formatCurrency } from '../utils/formatters';
 import InventoryAdjustmentModal from '../components/InventoryAdjustmentModal';
 import AdvancedProductModal from '../components/AdvancedProductModal';
@@ -21,16 +23,20 @@ const Inventory: React.FC = () => {
   const [showAdvancedModal, setShowAdvancedModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [typeFilter, setTypeFilter] = useState<ProductType | 'all'>('all');
+  const [businessTypeFilter, setBusinessTypeFilter] = useState<ProductType | 'all'>('all');
+  const [itemTypeFilter, setItemTypeFilter] = useState<ItemType | 'all'>('all');
+
 
   const [viewingProduct, setViewingProduct] = useState<Product | null>(null);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   const filteredProducts = products.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) || p.barcode?.includes(searchTerm);
-    const matchesType = typeFilter === 'all' || p.type === typeFilter;
-    return matchesSearch && matchesType;
+    const matchesBusinessType = businessTypeFilter === 'all' || p.type === businessTypeFilter;
+    const matchesItemType = itemTypeFilter === 'all' || p.itemType === itemTypeFilter;
+    return matchesSearch && matchesBusinessType && matchesItemType;
   });
+
 
   const lowStockCount = products.filter(p => p.stock < 10 && p.type !== 'service').length;
 
@@ -68,7 +74,9 @@ const Inventory: React.FC = () => {
         id: `SKU-${Math.floor(Math.random() * 9000) + 1000}`,
         name: newProd.name || 'Unnamed Product',
         type: newProd.type || 'retail',
+        itemType: newProd.itemType || 'finished',
         category: newProd.category || 'General',
+
         image: newProd.image || `https://picsum.photos/seed/${newProd.name}/400/400`,
         baseUOMId: newProd.baseUOMId || 'u1',
         units: newProd.units || [{ uomId: newProd.baseUOMId || 'u1', type: 'base', conversionFactor: 1, price: newProd.price || 0, isDefault: true }],
@@ -110,7 +118,9 @@ const Inventory: React.FC = () => {
       id: item.id || `SKU-${Date.now()}-${idx}`,
       name: item.name || 'Imported Product',
       type: (item.type as ProductType) || 'retail',
+      itemType: (item.itemType as any) || 'finished',
       category: item.category || 'General',
+
       image: `https://picsum.photos/seed/${item.name}/400/400`,
       baseUOMId: 'u5',
       units: [{ uomId: 'u5', type: 'base', conversionFactor: 1, price: parseFloat(item.price) || 0, isDefault: true }],
@@ -128,12 +138,24 @@ const Inventory: React.FC = () => {
 
   const getTypeLabel = (type: ProductType) => {
     switch (type) {
-      case 'retail': return t('inventory.type_raw');
+      case 'retail': return t('inventory.type_retail');
+      case 'fnb': return t('inventory.type_fnb');
       case 'service': return t('inventory.type_service');
-      case 'fnb': return t('inventory.type_finished');
       default: return type;
     }
   };
+
+  const getItemTypeLabel = (type: ItemType) => {
+    switch (type) {
+      case 'finished': return t('inventory.item_finished');
+      case 'semi_finished': return t('inventory.item_semi_finished');
+      case 'raw_material': return t('inventory.item_raw');
+      case 'service': return t('inventory.item_service');
+      default: return type;
+    }
+  };
+
+
 
   const getTypeStyle = (type: ProductType) => {
     switch (type) {
@@ -194,11 +216,12 @@ const Inventory: React.FC = () => {
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: t('inventory.type_raw'), val: products.filter(p => p.type === 'retail').length, icon: Package, color: 'text-emerald-500', bg: 'bg-emerald-50' },
-          { label: t('inventory.type_finished'), val: products.filter(p => p.type === 'fnb').length, icon: FlaskConical, color: 'text-orange-500', bg: 'bg-orange-50' },
+          { label: t('inventory.type_retail'), val: products.filter(p => p.type === 'retail').length, icon: ShoppingBag, color: 'text-emerald-500', bg: 'bg-emerald-50' },
+          { label: t('inventory.type_fnb'), val: products.filter(p => p.type === 'fnb').length, icon: Utensils, color: 'text-orange-500', bg: 'bg-orange-50' },
           { label: t('inventory.type_service'), val: products.filter(p => p.type === 'service').length, icon: Zap, color: 'text-blue-500', bg: 'bg-blue-50' },
           { label: t('inventory.status_low_stock'), val: lowStockCount, icon: AlertCircle, color: 'text-red-500', bg: 'bg-red-50' },
         ].map((stat, i) => (
+
           <div key={i} className="glass-card p-4 md:p-6 flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <div className={`p-3 rounded-xl ${stat.bg} ${stat.color}`}>
@@ -219,8 +242,8 @@ const Inventory: React.FC = () => {
           <button
             onClick={() => setActiveTab('overview')}
             className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${activeTab === 'overview'
-                ? 'bg-slate-900 text-white shadow-lg'
-                : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-100'
+              ? 'bg-slate-900 text-white shadow-lg'
+              : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-100'
               }`}
           >
             {t('pos.all')}
@@ -228,8 +251,8 @@ const Inventory: React.FC = () => {
           <button
             onClick={() => setActiveTab('history')}
             className={`px-6 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-all ${activeTab === 'history'
-                ? 'bg-slate-900 text-white shadow-lg'
-                : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-100'
+              ? 'bg-slate-900 text-white shadow-lg'
+              : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-100'
               }`}
           >
             <History size={16} />
@@ -238,17 +261,45 @@ const Inventory: React.FC = () => {
         </div>
 
         {activeTab === 'overview' && (
-          <div className="relative flex-1 md:max-w-[400px]">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
-            <input
-              type="text"
-              placeholder={t('pos.search_placeholder')}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-white border border-slate-100 rounded-xl font-bold text-sm outline-none focus:border-primary shadow-sm"
-            />
+          <div className="flex flex-col md:flex-row gap-4 flex-1 md:max-w-[800px]">
+            <div className="relative flex-1">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
+              <input
+                type="text"
+                placeholder={t('pos.search_placeholder')}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-12 pr-4 py-3 bg-white border border-slate-100 rounded-xl font-bold text-sm outline-none focus:border-primary shadow-sm"
+              />
+            </div>
+
+            <div className="flex gap-2">
+              <select
+                value={businessTypeFilter}
+                onChange={(e) => setBusinessTypeFilter(e.target.value as any)}
+                className="bg-white border border-slate-100 rounded-xl px-4 py-3 text-xs font-bold outline-none focus:border-primary shadow-sm"
+              >
+                <option value="all">Loại hình: Tất cả</option>
+                <option value="retail">{getTypeLabel('retail')}</option>
+                <option value="fnb">{getTypeLabel('fnb')}</option>
+                <option value="service">{getTypeLabel('service')}</option>
+              </select>
+
+              <select
+                value={itemTypeFilter}
+                onChange={(e) => setItemTypeFilter(e.target.value as any)}
+                className="bg-white border border-slate-100 rounded-xl px-4 py-3 text-xs font-bold outline-none focus:border-primary shadow-sm"
+              >
+                <option value="all">Hàng hoá: Tất cả</option>
+                <option value="finished">{getItemTypeLabel('finished')}</option>
+                <option value="semi_finished">{getItemTypeLabel('semi_finished')}</option>
+                <option value="raw_material">{getItemTypeLabel('raw_material')}</option>
+                <option value="service">{getItemTypeLabel('service')}</option>
+              </select>
+            </div>
           </div>
         )}
+
       </div>
 
       {/* Content */}
@@ -261,10 +312,11 @@ const Inventory: React.FC = () => {
                   <tr className="bg-slate-50 border-b border-slate-100">
                     <th className="text-left p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">{t('inventory.product_name')}</th>
                     <th className="text-left p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">{t('inventory.category')}</th>
-                    <th className="text-right p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">{t('pos.price')}</th>
+                    <th className="text-center p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">{t('inventory.item_type')}</th>
                     <th className="text-right p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">{t('inventory.stock_actual')}</th>
                     <th className="text-center p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">{t('staff.status')}</th>
                     <th className="text-right p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none"></th>
+
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50 text-sm">
@@ -283,10 +335,17 @@ const Inventory: React.FC = () => {
                           </div>
                         </td>
                         <td className="p-6">
-                          <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${getTypeStyle(prod.type)}`}>
+                          <span className={`px-2 py-0.5 rounded-md text-[8px] font-bold uppercase tracking-wider border ${getTypeStyle(prod.type)}`}>
                             {getTypeLabel(prod.type)}
                           </span>
+                          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">{prod.category}</p>
                         </td>
+                        <td className="p-6 text-center">
+                          <span className="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-lg text-[10px] font-black uppercase tracking-widest border border-slate-200">
+                            {getItemTypeLabel(prod.itemType)}
+                          </span>
+                        </td>
+
                         <td className="p-6 text-right font-black text-slate-900 border-none">
                           {formatCurrency(prod.price, enterpriseConfig.currency)}
                         </td>

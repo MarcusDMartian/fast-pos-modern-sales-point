@@ -1,5 +1,7 @@
 
 export type ProductType = 'retail' | 'service' | 'fnb';
+export type ItemType = 'finished' | 'semi_finished' | 'raw_material' | 'service';
+
 export type BOMType = 'recipe' | 'assembly' | 'service';
 export type UOMCategory = 'weight' | 'volume' | 'quantity';
 export type ProductStatus = 'active' | 'locked';
@@ -145,7 +147,9 @@ export interface Product {
   name: string;
   barcode?: string;
   type: ProductType;
+  itemType: ItemType;
   category: string;
+
   image: string;
   baseUOMId: string;
   units: ProductUOM[];
