@@ -71,7 +71,7 @@ export interface Voucher {
 export interface LoyaltyConfig {
   earningRate: number;
   redemptionRate: number;
-  tiers: { name: string; threshold: number; discount: number; }[];
+  tiers: { name: string; threshold: number; discount: number; birthdayDiscount?: number; }[];
 }
 
 export interface PromotionRule {
@@ -249,6 +249,9 @@ export interface Customer {
   tier: string;
   balance: number;
   points: number;
+  totalPointsAccumulated: number;
+  totalPointsSpent: number;
+  birthday?: string;
   email?: string;
   debtHistory?: DebtTransaction[];
 }

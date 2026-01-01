@@ -225,6 +225,10 @@
         "repayment_process": "Process Repayment",
         "complete_payment": "Complete Payment",
         "transaction_history": "Transaction History",
+        "birthday": "Birthday",
+        "points_accumulated": "Total Accumulated",
+        "points_available": "Available Points",
+        "points_spent": "Points Spent",
         "debt_purchase": "Debt Purchase",
         "repayment": "Repayment ({{method}})"
     },
@@ -339,5 +343,22 @@
         "placeholder": "e.g. Extra hot, no ice, side of sauce...",
         "clear": "Clear Note",
         "save": "Save Note"
+    },
+    "loyalty": {
+        "title": "Loyalty Program",
+        "subtitle": "Configure points and member tiers",
+        "save_success": "Loyalty settings saved!",
+        "saving": "Saving...",
+        "save_btn": "Save Config",
+        "earning_rate": "Earning Rate ({{symbol}}1 = X Points)",
+        "redemption_rate": "Redemption Rate (X Points = {{symbol}}1)",
+        "tiers_title": "Member Tiers",
+        "tier_name": "Tier Name",
+        "points_threshold": "Points Threshold",
+        "discount_percent": "Discount %",
+        "birthday_discount": "Birthday Discount %",
+        "add_tier": "Add New Tier",
+        "delete_confirm": "Are you sure you want to delete this tier?",
+        "default_tier_name": "New Tier"
     }
 }

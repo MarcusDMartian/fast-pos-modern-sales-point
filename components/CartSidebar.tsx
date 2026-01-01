@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { CartItem, ServiceType, Discount, Surcharge, Customer, PaymentMethod } from '../types';
 import {
   Trash2, Plus, Minus, CreditCard, ChevronRight, ShoppingBag,
-  Save, Scissors, Tag, Percent, PlusCircle, StickyNote, UserPlus, X, Search, User, ArrowLeft
+  Save, Scissors, Tag, Percent, PlusCircle, StickyNote, UserPlus, X, Search, User, ArrowLeft, Gift
 } from 'lucide-react';
 import { useStore } from '../store';
 import DiscountModal from './DiscountModal';
@@ -34,10 +34,17 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
   onProceedToCheckout
 }) => {
   const { t } = useTranslation();
-  const { customers, enterpriseConfig } = useStore();
+  const { customers, enterpriseConfig, loyaltyConfig } = useStore();
   const [orderDiscount, setOrderDiscount] = useState<Discount | undefined>(undefined);
   const [surcharge, setSurcharge] = useState(0);
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+
+  const isBirthday = (birthday?: string) => {
+    if (!birthday) return false;
+    const today = new Date();
+    const bday = new Date(birthday);
+    return today.getMonth() === bday.getMonth() && today.getDate() === bday.getDate();
+  };
 
   const [showOrderDiscountModal, setShowOrderDiscountModal] = useState(false);
   const [showCustomerModal, setShowCustomerModal] = useState(false);
@@ -59,9 +66,16 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
 
   const totalQuantity = items.reduce((acc, item) => acc + item.quantity, 0);
 
-  const discountValue = orderDiscount
+  const birthdayDiscountValue = useMemo(() => {
+    if (!selectedCustomer || !selectedCustomer.birthday || !isBirthday(selectedCustomer.birthday)) return 0;
+    const tier = useStore.getState().loyaltyConfig.tiers.find(t => t.name === selectedCustomer.tier);
+    if (!tier || !tier.birthdayDiscount) return 0;
+    return (subtotal * tier.birthdayDiscount) / 100;
+  }, [selectedCustomer, subtotal]);
+
+  const discountValue = (orderDiscount
     ? (orderDiscount.type === 'percentage' ? (subtotal * orderDiscount.value) / 100 : orderDiscount.value)
-    : 0;
+    : 0) + birthdayDiscountValue;
 
   const tax = (subtotal - discountValue) * 0.1;
   const total = subtotal - discountValue + tax + surcharge;
@@ -157,6 +171,19 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
                 >
                   <X size={16} />
                 </button>
+              </div>
+            )}
+            {selectedCustomer && isBirthday(selectedCustomer.birthday) && (
+              <div className="mt-3 p-3 bg-pink-50 border border-pink-100 rounded-2xl flex items-center justify-between animate-bounce shadow-sm">
+                <div className="flex items-center gap-2">
+                  <Gift size={16} className="text-pink-500" />
+                  <span className="text-[10px] font-black text-pink-600 uppercase tracking-widest">
+                    {t('loyalty.birthday_discount')}
+                  </span>
+                </div>
+                <span className="text-[10px] font-black text-pink-600">
+                  +{loyaltyConfig.tiers.find(t => t.name === selectedCustomer.tier)?.birthdayDiscount || 0}%
+                </span>
               </div>
             )}
           </div>

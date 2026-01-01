@@ -8,7 +8,7 @@ import {
 } from './types';
 import {
     MOCK_PRODUCTS, MOCK_CUSTOMERS, MOCK_TABLES, MOCK_EMPLOYEES,
-    MOCK_BRANCHES, MOCK_UOMS, MOCK_PRINT_GROUPS, MOCK_AREAS
+    MOCK_BRANCHES, MOCK_UOMS, MOCK_PRINT_GROUPS, MOCK_AREAS, MOCK_LOYALTY
 } from './constants';
 
 interface AppState {
@@ -146,7 +146,7 @@ export const useStore = create<AppState>()(
             setAreas: (areas) => set({ areas }),
             addArea: (area) => set((state) => ({ areas: [...state.areas, area] })),
 
-            loyaltyConfig: { earningRate: 1, redemptionRate: 0.1, tiers: [] },
+            loyaltyConfig: MOCK_LOYALTY,
             setLoyaltyConfig: (loyaltyConfig) => set({ loyaltyConfig }),
 
             promotions: [],

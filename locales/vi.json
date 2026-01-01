@@ -236,6 +236,10 @@
         "repayment_process": "Xử lý trả nợ",
         "complete_payment": "Hoàn tất thanh toán",
         "transaction_history": "Lịch sử giao dịch",
+        "birthday": "Ngày sinh nhật",
+        "points_accumulated": "Tổng tích luỹ",
+        "points_available": "Điểm khả dụng",
+        "points_spent": "Đã sử dụng",
         "debt_purchase": "Mua hàng ghi nợ",
         "repayment": "Thanh toán ({{method}})"
     },
@@ -350,5 +354,22 @@
         "placeholder": "Ví dụ: Nhiều đá, không hành, thêm sốt...",
         "clear": "Xoá ghi chú",
         "save": "Lưu ghi chú"
+    },
+    "loyalty": {
+        "title": "Chương trình Loyalty",
+        "subtitle": "Cấu hình tích điểm và hạng thành viên",
+        "save_success": "Đã lưu cấu hình Loyalty!",
+        "saving": "Đang lưu...",
+        "save_btn": "Lưu cấu hình",
+        "earning_rate": "Tỷ lệ tích điểm ({{symbol}}1 = X Điểm)",
+        "redemption_rate": "Tỷ lệ quy đổi (X Điểm = {{symbol}}1)",
+        "tiers_title": "Hạng thành viên",
+        "tier_name": "Tên hạng",
+        "points_threshold": "Ngưỡng điểm",
+        "discount_percent": "Giảm giá %",
+        "birthday_discount": "Giảm giá sinh nhật %",
+        "add_tier": "Thêm hạng mới",
+        "delete_confirm": "Bạn có chắc chắn muốn xóa hạng này?",
+        "default_tier_name": "Hạng mới"
     }
 }

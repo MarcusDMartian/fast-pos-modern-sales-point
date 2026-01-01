@@ -1,10 +1,11 @@
+
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useStore } from '../store';
 import {
-  Search, UserPlus, Phone, Award, Plus, Edit,
+  Search, UserPlus, Phone, Award, Edit,
   Crown, Gift, Wallet, ArrowUpCircle, Star, Check, X,
-  Upload, Diamond, ShieldCheck, Zap, UserCheck, Target
+  Upload, Diamond, ShieldCheck, Zap, UserCheck, Target, Calendar
 } from 'lucide-react';
 import { formatCurrency, getCurrencySymbol } from '../utils/formatters';
 import DebtManagementModal from '../components/DebtManagementModal';
@@ -15,16 +16,6 @@ import { Customer } from '../types';
 type LoyaltyTab = 'members' | 'tiers' | 'topup' | 'redeem';
 
 // Types
-interface MemberTier {
-  id: string;
-  name: string;
-  minPoints: number;
-  benefits: string[];
-  discountPercent: number;
-  color: string;
-  icon: any;
-}
-
 interface TopUpTransaction {
   id: string;
   customerId: string;
@@ -48,18 +39,18 @@ interface RedeemRequest {
 
 // Mock data
 const MOCK_TOPUPS: TopUpTransaction[] = [
-  { id: 'TU-001', customerId: 'C1', customerName: 'Nguyễn Văn A', amount: 500000, paymentMethod: 'Tiền mặt', date: '2024-12-31', bonus: 50000 },
-  { id: 'TU-002', customerId: 'C2', customerName: 'Trần Thị B', amount: 1000000, paymentMethod: 'Chuyển khoản', date: '2024-12-30', bonus: 150000 },
+  { id: 'TU-001', customerId: 'C1', customerName: 'Nguyễn Minh Khoa', amount: 500000, paymentMethod: 'Tiền mặt', date: '2025-01-01', bonus: 50000 },
+  { id: 'TU-002', customerId: 'C2', customerName: 'Trần Thị Thúy Chi', amount: 1000000, paymentMethod: 'Chuyển khoản', date: '2025-01-02', bonus: 150000 },
 ];
 
 const MOCK_REDEEMS: RedeemRequest[] = [
-  { id: 'RD-001', customerId: 'C1', customerName: 'Nguyễn Văn A', pointsUsed: 500, reward: 'Voucher 50k', value: 50000, date: '2024-12-31', status: 'completed' },
-  { id: 'RD-002', customerId: 'C3', customerName: 'Lê Văn C', pointsUsed: 1000, reward: 'Voucher 120k', value: 120000, date: '2024-12-31', status: 'pending' },
+  { id: 'RD-001', customerId: 'C1', customerName: 'Nguyễn Minh Khoa', pointsUsed: 500, reward: 'Voucher 50k', value: 50000, date: '2025-01-01', status: 'completed' },
+  { id: 'RD-002', customerId: 'C3', customerName: 'Phạm Hoàng Nam', pointsUsed: 1000, reward: 'Voucher 120k', value: 120000, date: '2025-01-02', status: 'pending' },
 ];
 
 const Customers: React.FC = () => {
   const { t } = useTranslation();
-  const { customers, updateCustomer, addCustomer, showToast, enterpriseConfig } = useStore();
+  const { customers, updateCustomer, addCustomer, showToast, enterpriseConfig, loyaltyConfig } = useStore();
   const [activeTab, setActiveTab] = useState<LoyaltyTab>('members');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
@@ -73,29 +64,32 @@ const Customers: React.FC = () => {
   const [topups] = useState<TopUpTransaction[]>(MOCK_TOPUPS);
   const [redeems, setRedeems] = useState<RedeemRequest[]>(MOCK_REDEEMS);
 
-  const MEMBER_TIERS: MemberTier[] = [
-    { id: 'T1', name: t('customers.tier_bronze'), minPoints: 0, benefits: ['Tích điểm 1%', 'Ưu đãi sinh nhật'], discountPercent: 0, color: 'amber', icon: Award },
-    { id: 'T2', name: t('customers.tier_silver'), minPoints: 1000, benefits: ['Tích điểm 2%', 'Giảm 5% bánh ngọt'], discountPercent: 5, color: 'slate', icon: ShieldCheck },
-    { id: 'T3', name: t('customers.tier_gold'), minPoints: 5000, benefits: ['Tích điểm 5%', 'Phòng chờ VIP', 'Quà lễ Tết'], discountPercent: 10, color: 'yellow', icon: Star },
-    { id: 'T4', name: t('customers.tier_platinum'), minPoints: 15000, benefits: ['Tích điểm 10%', 'Ưu tiên phục vụ'], discountPercent: 15, color: 'blue', icon: Diamond },
-  ];
+  const getTierMetadata = (tierName: string) => {
+    const lower = tierName.toLowerCase();
+    if (lower.includes('kim cương') || lower.includes('diamond') || lower.includes('platinum') || lower.includes('bạch kim')) {
+      return { color: 'blue', icon: Diamond, bg: 'bg-blue-100', text: 'text-blue-600' };
+    }
+    if (lower.includes('vàng') || lower.includes('gold')) {
+      return { color: 'yellow', icon: Star, bg: 'bg-yellow-100', text: 'text-yellow-600' };
+    }
+    if (lower.includes('bạc') || lower.includes('silver')) {
+      return { color: 'slate', icon: ShieldCheck, bg: 'bg-slate-100', text: 'text-slate-600' };
+    }
+    if (lower.includes('đồng') || lower.includes('bronze')) {
+      return { color: 'amber', icon: Award, bg: 'bg-amber-100', text: 'text-amber-600' };
+    }
+    return { color: 'slate', icon: Zap, bg: 'bg-slate-100', text: 'text-slate-600' };
+  };
 
   const filtered = customers.filter(c =>
     c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     c.phone.includes(searchTerm)
   );
 
-  const tierStats = useMemo(() => {
-    return MEMBER_TIERS.map(tier => ({
-      ...tier,
-      count: customers.filter(c => c.tier === tier.name).length
-    }));
-  }, [customers, MEMBER_TIERS]);
-
   const stats = [
     { label: t('customers.stats.new_customers'), value: '24', change: '+12%', icon: UserPlus, color: 'text-emerald-500', bg: 'bg-emerald-50' },
-    { label: t('customers.stats.active_members'), value: '840', change: '+5%', icon: UserCheck, color: 'text-primary', bg: 'bg-primary/10' },
-    { label: t('customers.stats.total_points'), value: '45.2K', change: '+18%', icon: Award, color: 'text-blue-500', bg: 'bg-blue-50' },
+    { label: t('customers.stats.active_members'), value: customers.length.toString(), change: '+5%', icon: UserCheck, color: 'text-primary', bg: 'bg-primary/10' },
+    { label: t('customers.stats.total_points'), value: (customers.reduce((sum, c) => sum + (c.totalPointsAccumulated || 0), 0) / 1000).toFixed(1) + 'K', change: '+18%', icon: Award, color: 'text-blue-500', bg: 'bg-blue-50' },
     { label: t('customers.stats.avg_loyalty'), value: '92%', change: '+2%', icon: Target, color: 'text-orange-500', bg: 'bg-orange-50' },
   ];
 
@@ -110,9 +104,12 @@ const Customers: React.FC = () => {
         phone: data.phone || '',
         email: data.email || '',
         type: data.type || 'Normal',
-        tier: data.tier || t('customers.tier_bronze'),
+        tier: data.tier || (loyaltyConfig.tiers[0]?.name || 'Member'),
         balance: data.balance || 0,
         points: data.points || 0,
+        totalPointsAccumulated: data.points || 0,
+        totalPointsSpent: 0,
+        birthday: data.birthday || '',
         debtHistory: []
       };
       addCustomer(newCust);
@@ -124,7 +121,7 @@ const Customers: React.FC = () => {
     if (!topUpCustomer || !topUpAmount) return;
     const amount = parseFloat(topUpAmount);
     const bonus = amount >= 1000000 ? amount * 0.15 : amount >= 500000 ? amount * 0.1 : 0;
-    updateCustomer(topUpCustomer.id, { balance: topUpCustomer.balance + amount + bonus });
+    updateCustomer(topUpCustomer.id, { balance: (topUpCustomer.balance || 0) + amount + bonus });
     showToast(`${t('common.success')}! Nạp ${formatCurrency(amount, enterpriseConfig.currency)} + Bonus ${formatCurrency(bonus, enterpriseConfig.currency)}`, 'success');
     setShowTopUpModal(false);
     setTopUpAmount('');
@@ -136,11 +133,16 @@ const Customers: React.FC = () => {
     showToast(t('common.success'), 'success');
   };
 
-  const getTierIcon = (tier: string) => {
-    if (tier === t('customers.tier_platinum')) return <Diamond size={14} className="text-blue-500" />;
-    if (tier === t('customers.tier_gold')) return <Star size={14} className="text-yellow-500" />;
-    if (tier === t('customers.tier_silver')) return <Zap size={14} className="text-slate-400" />;
-    return <Award size={14} className="text-amber-500" />;
+  const renderTierIcon = (tierName: string) => {
+    const meta = getTierMetadata(tierName);
+    return <meta.icon size={14} className={meta.text} />;
+  };
+
+  const isBirthday = (birthday?: string) => {
+    if (!birthday) return false;
+    const today = new Date();
+    const bday = new Date(birthday);
+    return today.getMonth() === bday.getMonth() && today.getDate() === bday.getDate();
   };
 
   return (
@@ -195,8 +197,8 @@ const Customers: React.FC = () => {
             key={tab.id}
             onClick={() => setActiveTab(tab.id as LoyaltyTab)}
             className={`px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-all whitespace-nowrap ${activeTab === tab.id
-                ? 'bg-slate-900 text-white shadow-lg'
-                : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-100'
+              ? 'bg-slate-900 text-white shadow-lg'
+              : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-100'
               }`}
           >
             <tab.icon size={16} />
@@ -230,49 +232,83 @@ const Customers: React.FC = () => {
               <div key={cust.id} className="glass-card p-6 group hover:shadow-2xl transition-all border-b-4 border-transparent hover:border-primary">
                 <div className="flex items-start justify-between mb-6">
                   <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center text-primary text-xl font-black border border-slate-100">
+                    <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center text-primary text-xl font-black border border-slate-100 relative">
                       {cust.name.charAt(0)}
+                      {isBirthday(cust.birthday) && (
+                        <div className="absolute -top-2 -right-2 p-1.5 bg-pink-500 text-white rounded-full shadow-lg animate-bounce">
+                          <Gift size={12} />
+                        </div>
+                      )}
                     </div>
                     <div>
-                      <h3 className="font-black text-slate-800">{cust.name}</h3>
+                      <h3 className="font-black text-slate-800 flex items-center gap-2">
+                        {cust.name}
+                      </h3>
                       <div className="flex items-center gap-1.5 mt-1">
-                        {getTierIcon(cust.tier)}
+                        {renderTierIcon(cust.tier)}
                         <span className="font-bold text-slate-400 text-xs uppercase tracking-wider">{cust.tier}</span>
                       </div>
                     </div>
                   </div>
-                  <button
-                    onClick={() => { setEditingCustomer(cust); setShowCustomerModal(true); }}
-                    className="p-2 text-slate-300 hover:text-primary transition-colors"
-                  >
-                    <Edit size={18} />
-                  </button>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setSelectedCustomer(cust)}
+                      className="p-2 text-slate-300 hover:text-blue-500 transition-colors"
+                      title={t('customers.debt_management')}
+                    >
+                      <Wallet size={18} />
+                    </button>
+                    <button
+                      onClick={() => { setEditingCustomer(cust); setShowCustomerModal(true); }}
+                      className="p-2 text-slate-300 hover:text-primary transition-colors"
+                    >
+                      <Edit size={18} />
+                    </button>
+                  </div>
                 </div>
 
-                <div className="space-y-2 mb-6">
-                  <div className="flex items-center gap-3 text-sm text-slate-500 font-medium">
-                    <Phone size={14} className="text-slate-300" />
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  <div className="flex items-center gap-3 text-xs text-slate-500 font-bold">
+                    <Phone size={12} className="text-slate-300" />
                     {cust.phone}
                   </div>
-                  <div className="flex items-center gap-3 text-sm text-slate-500 font-medium">
-                    <Award size={14} className="text-amber-500" />
-                    {cust.points} {t('customers.loyalty_points')}
+                  <div className="flex items-center gap-3 text-xs text-slate-500 font-bold">
+                    <Calendar size={12} className="text-pink-400" />
+                    {cust.birthday ? new Date(cust.birthday).toLocaleDateString('vi-VN') : '--/--'}
+                  </div>
+                </div>
+
+                <div className="bg-slate-50 rounded-2xl p-4 space-y-3 mb-6">
+                  <div className="flex justify-between items-center bg-white p-2 rounded-xl shadow-sm">
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{t('customers.points_available')}</span>
+                    <span className="font-black text-emerald-600">{(cust.points || 0).toLocaleString()}</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">{t('customers.points_accumulated')}</span>
+                      <span className="font-black text-blue-600 text-xs">{(cust.totalPointsAccumulated || 0).toLocaleString()}</span>
+                    </div>
+                    <div className="flex flex-col gap-1 items-end">
+                      <span className="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">{t('customers.points_spent')}</span>
+                      <span className="font-black text-red-400 text-xs">{(cust.totalPointsSpent || 0).toLocaleString()}</span>
+                    </div>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="p-3 bg-slate-50 rounded-xl">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter mb-1">{t('customers.debt')}</p>
-                    <p className={`font-black text-sm ${cust.balance >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-                      {formatCurrency(cust.balance, enterpriseConfig.currency)}
+                  <div className="p-3 bg-white border border-slate-100 rounded-xl">
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">{t('customers.debt')}</p>
+                    <p className={`font-black text-sm ${(cust.balance || 0) >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                      {formatCurrency(Math.abs(cust.balance || 0), enterpriseConfig.currency)}
+                      <span className="text-[8px] ml-1 uppercase">{(cust.balance || 0) < 0 ? t('customers.in_debt') : t('customers.surplus')}</span>
                     </p>
                   </div>
                   <button
                     onClick={() => { setTopUpCustomer(cust); setShowTopUpModal(true); }}
-                    className="p-3 bg-amber-50 text-amber-600 rounded-xl flex flex-col items-center justify-center hover:bg-amber-500 hover:text-white transition-all group"
+                    className="p-3 bg-primary/10 text-primary rounded-xl flex flex-col items-center justify-center hover:bg-primary hover:text-white transition-all group border border-primary/5"
                   >
                     <ArrowUpCircle size={18} className="mb-1" />
-                    <span className="text-[10px] font-extrabold uppercase">{t('customers.top_up')}</span>
+                    <span className="text-[9px] font-black uppercase tracking-wider">{t('customers.top_up')}</span>
                   </button>
                 </div>
               </div>
@@ -284,38 +320,50 @@ const Customers: React.FC = () => {
       {/* Tiers Tab */}
       {activeTab === 'tiers' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 animate-in fade-in duration-500">
-          {MEMBER_TIERS.map(tier => (
-            <div key={tier.id} className={`glass-card p-6 border-t-4 border-${tier.color}-500 relative overflow-hidden group`}>
-              <div className={`absolute -right-4 -top-4 w-24 h-24 bg-${tier.color}-50 rounded-full group-hover:scale-110 transition-transform`} />
-              <div className="relative">
-                <div className="flex items-center gap-4 mb-6">
-                  <div className={`p-4 rounded-2xl bg-${tier.color}-100 text-${tier.color}-600`}>
-                    <tier.icon size={28} />
-                  </div>
-                  <div>
-                    <h3 className="font-black text-slate-800 text-xl">{tier.name}</h3>
-                    <p className="text-xs font-bold text-slate-400">{tier.minPoints}+ {t('customers.loyalty_points')}</p>
-                  </div>
-                </div>
-
-                <div className="space-y-3 mb-8">
-                  {tier.benefits.map((benefit, idx) => (
-                    <div key={idx} className="flex items-center gap-3 text-sm font-bold text-slate-600">
-                      <Check size={16} className="text-emerald-500 shrink-0" />
-                      {benefit}
+          {loyaltyConfig.tiers.map((tier, idx) => {
+            const meta = getTierMetadata(tier.name);
+            return (
+              <div key={idx} className={`glass-card p-6 border-t-4 border-${meta.color}-500 relative overflow-hidden group`}>
+                <div className={`absolute -right-4 -top-4 w-24 h-24 ${meta.bg} rounded-full group-hover:scale-110 transition-transform`} />
+                <div className="relative">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className={`p-4 rounded-2xl ${meta.bg} ${meta.text}`}>
+                      <meta.icon size={28} />
                     </div>
-                  ))}
-                </div>
+                    <div>
+                      <h3 className="font-black text-slate-800 text-xl">{tier.name}</h3>
+                      <p className="text-xs font-bold text-slate-400">{tier.threshold}+ {t('customers.loyalty_points')}</p>
+                    </div>
+                  </div>
 
-                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center mb-1">{t('sidebar.customers')}</p>
-                  <p className="font-black text-3xl text-slate-800 text-center">
-                    {customers.filter(c => c.tier === tier.name).length}
-                  </p>
+                  <div className="space-y-3 mb-8">
+                    <div className="flex items-center gap-3 text-sm font-bold text-slate-600">
+                      <Check size={16} className="text-emerald-500 shrink-0" />
+                      {t('loyalty.discount_percent')}: {tier.discount}%
+                    </div>
+                    {tier.birthdayDiscount && (
+                      <div className="flex items-center gap-3 text-sm font-bold text-pink-500">
+                        <Gift size={16} className="shrink-0" />
+                        {t('loyalty.birthday_discount')}: +{tier.birthdayDiscount}%
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center mb-1">{t('sidebar.customers')}</p>
+                    <p className="font-black text-3xl text-slate-800 text-center">
+                      {customers.filter(c => c.tier === tier.name).length}
+                    </p>
+                  </div>
                 </div>
               </div>
+            );
+          })}
+          {loyaltyConfig.tiers.length === 0 && (
+            <div className="col-span-full py-20 text-center text-slate-400 font-bold uppercase tracking-widest">
+              {t('cart.empty')}
             </div>
-          ))}
+          )}
         </div>
       )}
 
