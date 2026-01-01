@@ -8,6 +8,7 @@ import {
 import { MOCK_SUPPLIERS } from '../constants';
 import { Supplier } from '../types';
 import { useStore } from '../store';
+import { formatCurrency } from '../utils/formatters';
 
 type ProcurementTab = 'suppliers' | 'pr' | 'po' | 'gr';
 
@@ -65,7 +66,7 @@ const MOCK_GRS: GoodsReceipt[] = [
 ];
 
 const Suppliers: React.FC = () => {
-  const { showToast } = useStore();
+  const { showToast, enterpriseConfig } = useStore();
   const [suppliers] = useState<Supplier[]>(MOCK_SUPPLIERS);
   const [purchaseRequests, setPurchaseRequests] = useState<PurchaseRequest[]>(MOCK_PRS);
   const [purchaseOrders] = useState<PurchaseOrder[]>(MOCK_POS);
@@ -154,8 +155,8 @@ const Suppliers: React.FC = () => {
             key={tab.id}
             onClick={() => setActiveTab(tab.id as ProcurementTab)}
             className={`px-5 py-3 rounded-2xl font-bold text-sm flex items-center gap-2 transition-all whitespace-nowrap ${activeTab === tab.id
-                ? 'bg-primary text-white shadow-xl shadow-primary/20'
-                : 'bg-white/50 text-slate-500 hover:bg-white'
+              ? 'bg-primary text-white shadow-xl shadow-primary/20'
+              : 'bg-white/50 text-slate-500 hover:bg-white'
               }`}
           >
             <tab.icon size={16} />
@@ -214,63 +215,113 @@ const Suppliers: React.FC = () => {
       {activeTab === 'pr' && (
         <div className="space-y-4 animate-in fade-in duration-300">
           <div className="glass-card overflow-hidden">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-slate-50 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                  <th className="text-left p-4 pl-6">Mã PR</th>
-                  <th className="text-left p-4">Người yêu cầu</th>
-                  <th className="text-left p-4">Bộ phận</th>
-                  <th className="text-right p-4">Tổng tiền</th>
-                  <th className="text-center p-4">Ưu tiên</th>
-                  <th className="text-center p-4">Trạng thái</th>
-                  <th className="text-right p-4 pr-6">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                {purchaseRequests.map(pr => (
-                  <tr key={pr.id} className="border-t border-slate-50 hover:bg-white/50 transition-colors">
-                    <td className="p-4 pl-6">
-                      <p className="font-bold text-slate-800">{pr.id}</p>
-                      <p className="text-xs text-slate-400">{new Date(pr.requestDate).toLocaleDateString('vi-VN')}</p>
-                    </td>
-                    <td className="p-4 font-medium text-slate-600">{pr.requester}</td>
-                    <td className="p-4 text-slate-500">{pr.department}</td>
-                    <td className="p-4 text-right font-black text-primary">{pr.totalAmount.toLocaleString()}₫</td>
-                    <td className="p-4 text-center">
-                      <span className={`px-2 py-1 rounded-lg text-[10px] font-bold uppercase ${getPriorityStyle(pr.priority)}`}>
-                        {pr.priority}
-                      </span>
-                    </td>
-                    <td className="p-4 text-center">
-                      <span className={`px-2 py-1 rounded-lg border text-[10px] font-bold uppercase ${getStatusStyle(pr.status)}`}>
-                        {pr.status === 'pending' && 'Chờ duyệt'}
-                        {pr.status === 'approved' && 'Đã duyệt'}
-                        {pr.status === 'rejected' && 'Từ chối'}
-                        {pr.status === 'draft' && 'Nháp'}
-                      </span>
-                    </td>
-                    <td className="p-4 pr-6 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <button className="p-2 bg-slate-50 text-slate-400 rounded-lg hover:bg-slate-100"><Eye size={14} /></button>
-                        {pr.status === 'pending' && (
-                          <>
-                            <button
-                              onClick={() => handleApprovePR(pr.id)}
-                              className="p-2 bg-emerald-50 text-emerald-500 rounded-lg hover:bg-emerald-500 hover:text-white transition-all"
-                            >
-                              <Check size={14} />
-                            </button>
-                            <button className="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all">
-                              <XCircle size={14} />
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </td>
+            {/* Desktop Table */}
+            <div className="hidden md:block">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-slate-50 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                    <th className="text-left p-4 pl-6">Mã PR</th>
+                    <th className="text-left p-4">Người yêu cầu</th>
+                    <th className="text-left p-4">Bộ phận</th>
+                    <th className="text-right p-4">Tổng tiền</th>
+                    <th className="text-center p-4">Ưu tiên</th>
+                    <th className="text-center p-4">Trạng thái</th>
+                    <th className="text-right p-4 pr-6">Thao tác</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {purchaseRequests.map(pr => (
+                    <tr key={pr.id} className="border-t border-slate-50 hover:bg-white/50 transition-colors">
+                      <td className="p-4 pl-6">
+                        <p className="font-bold text-slate-800">{pr.id}</p>
+                        <p className="text-xs text-slate-400">{new Date(pr.requestDate).toLocaleDateString('vi-VN')}</p>
+                      </td>
+                      <td className="p-4 font-medium text-slate-600">{pr.requester}</td>
+                      <td className="p-4 text-slate-500">{pr.department}</td>
+                      <td className="p-4 text-right font-black text-primary">{formatCurrency(pr.totalAmount, enterpriseConfig.currency)}</td>
+                      <td className="p-4 text-center">
+                        <span className={`px-2 py-1 rounded-lg text-[10px] font-bold uppercase ${getPriorityStyle(pr.priority)}`}>
+                          {pr.priority}
+                        </span>
+                      </td>
+                      <td className="p-4 text-center">
+                        <span className={`px-2 py-1 rounded-lg border text-[10px] font-bold uppercase ${getStatusStyle(pr.status)}`}>
+                          {pr.status === 'pending' && 'Chờ duyệt'}
+                          {pr.status === 'approved' && 'Đã duyệt'}
+                          {pr.status === 'rejected' && 'Từ chối'}
+                          {pr.status === 'draft' && 'Nháp'}
+                        </span>
+                      </td>
+                      <td className="p-4 pr-6 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <button className="p-2 bg-slate-50 text-slate-400 rounded-lg hover:bg-slate-100"><Eye size={14} /></button>
+                          {pr.status === 'pending' && (
+                            <>
+                              <button
+                                onClick={() => handleApprovePR(pr.id)}
+                                className="p-2 bg-emerald-50 text-emerald-500 rounded-lg hover:bg-emerald-500 hover:text-white transition-all"
+                              >
+                                <Check size={14} />
+                              </button>
+                              <button className="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all">
+                                <XCircle size={14} />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Cards */}
+            <div className="md:hidden p-4 space-y-3">
+              {purchaseRequests.map(pr => (
+                <div key={pr.id} className="bg-white rounded-xl p-4 border border-slate-100">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="font-bold text-sm text-slate-800">{pr.id}</span>
+                      <p className="text-[10px] text-slate-400">{new Date(pr.requestDate).toLocaleDateString('vi-VN')}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase ${getPriorityStyle(pr.priority)}`}>{pr.priority}</span>
+                      <span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase ${getStatusStyle(pr.status)}`}>
+                        {pr.status === 'pending' ? 'Chờ' : pr.status === 'approved' ? 'Duyệt' : 'Từ chối'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="border-t border-slate-100 mt-3 pt-3 space-y-2">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-slate-400">Người yêu cầu</span>
+                      <span className="font-medium text-slate-600">{pr.requester}</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-slate-400">Bộ phận</span>
+                      <span className="font-medium text-slate-600">{pr.department}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-400 text-xs">Tổng tiền</span>
+                      <span className="font-black text-primary text-base">{formatCurrency(pr.totalAmount, enterpriseConfig.currency)}</span>
+                    </div>
+                  </div>
+                  {pr.status === 'pending' && (
+                    <div className="border-t border-slate-100 mt-3 pt-3 flex gap-2">
+                      <button
+                        onClick={() => handleApprovePR(pr.id)}
+                        className="flex-1 py-2 bg-emerald-50 text-emerald-600 rounded-lg font-bold text-xs"
+                      >
+                        Duyệt
+                      </button>
+                      <button className="flex-1 py-2 bg-red-50 text-red-500 rounded-lg font-bold text-xs">
+                        Từ chối
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
@@ -299,7 +350,7 @@ const Suppliers: React.FC = () => {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-black text-xl text-primary">{po.total.toLocaleString()}₫</p>
+                  <p className="font-black text-xl text-primary">{formatCurrency(po.total, enterpriseConfig.currency)}</p>
                   <p className="text-xs text-slate-400">{po.paymentTerms}</p>
                 </div>
               </div>
@@ -319,7 +370,7 @@ const Suppliers: React.FC = () => {
                 </div>
                 <div className="p-3 bg-slate-50 rounded-xl">
                   <p className="text-[10px] font-bold text-slate-400 uppercase">Thuế</p>
-                  <p className="font-bold text-slate-800">{po.tax.toLocaleString()}₫</p>
+                  <p className="font-bold text-slate-800">{formatCurrency(po.tax, enterpriseConfig.currency)}</p>
                 </div>
               </div>
 

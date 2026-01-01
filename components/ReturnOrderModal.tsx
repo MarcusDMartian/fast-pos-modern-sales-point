@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { X, Search, RotateCcw, AlertTriangle, CheckCircle2, Package, Receipt, DollarSign } from 'lucide-react';
 import { Order, CartItem, ReturnOrder, ReturnOrderItem, ReturnReason, RefundMethod, ItemCondition } from '../types';
+import { useStore } from '../store';
+import { formatCurrency } from '../utils/formatters';
 
 interface ReturnOrderModalProps {
     orders: Order[];
@@ -25,6 +27,7 @@ const REFUND_METHODS: { value: RefundMethod; label: string }[] = [
 ];
 
 const ReturnOrderModal: React.FC<ReturnOrderModalProps> = ({ orders, onClose, onSubmit }) => {
+    const { enterpriseConfig } = useStore();
     const [step, setStep] = useState<'search' | 'select' | 'confirm'>('search');
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -190,7 +193,7 @@ const ReturnOrderModal: React.FC<ReturnOrderModalProps> = ({ orders, onClose, on
                                                 </div>
                                             </div>
                                             <div className="text-right">
-                                                <p className="font-black text-slate-800">{order.total.toLocaleString()}₫</p>
+                                                <p className="font-black text-slate-800">{formatCurrency(order.total, enterpriseConfig.currency)}</p>
                                                 <p className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">{order.status}</p>
                                             </div>
                                         </button>
@@ -225,7 +228,7 @@ const ReturnOrderModal: React.FC<ReturnOrderModalProps> = ({ orders, onClose, on
                                                 <img src={item.image} alt={item.name} className="w-16 h-16 rounded-xl object-cover" />
                                                 <div className="flex-1">
                                                     <p className="font-bold text-slate-800">{item.name}</p>
-                                                    <p className="text-sm text-slate-400">Đã mua: {item.quantity} • Giá: {item.price.toLocaleString()}₫</p>
+                                                    <p className="text-sm text-slate-400">Đã mua: {item.quantity} • Giá: {formatCurrency(item.price, enterpriseConfig.currency)}</p>
                                                 </div>
                                                 <div className="flex items-center gap-3">
                                                     <input
@@ -305,15 +308,15 @@ const ReturnOrderModal: React.FC<ReturnOrderModalProps> = ({ orders, onClose, on
                                 <div className="space-y-4">
                                     <div className="flex justify-between items-center py-3 border-b border-white/10">
                                         <span className="text-slate-400">Tổng giá trị hàng trả</span>
-                                        <span className="font-black text-xl">{refundCalculation.subtotal.toLocaleString()}₫</span>
+                                        <span className="font-black text-xl">{formatCurrency(refundCalculation.subtotal, enterpriseConfig.currency)}</span>
                                     </div>
                                     <div className="flex justify-between items-center py-3 border-b border-white/10">
                                         <span className="text-slate-400">Phí hoàn kho ({restockingFeePercent}%)</span>
-                                        <span className="font-black text-red-400">-{refundCalculation.restockingFee.toLocaleString()}₫</span>
+                                        <span className="font-black text-red-400">-{formatCurrency(refundCalculation.restockingFee, enterpriseConfig.currency)}</span>
                                     </div>
                                     <div className="flex justify-between items-center py-3">
                                         <span className="text-slate-200 font-bold">HOÀN TIỀN</span>
-                                        <span className="font-black text-3xl text-primary">{refundCalculation.total.toLocaleString()}₫</span>
+                                        <span className="font-black text-3xl text-primary">{formatCurrency(refundCalculation.total, enterpriseConfig.currency)}</span>
                                     </div>
                                 </div>
                             </div>

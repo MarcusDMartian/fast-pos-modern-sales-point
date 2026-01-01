@@ -18,12 +18,12 @@ const ReservationScheduleModal: React.FC<ReservationScheduleModalProps> = ({ tab
   }, [table.allReservations, selectedDate]);
 
   return (
-    <div className="fixed inset-0 z-[150] flex items-center justify-center bg-[#333984]/30 backdrop-blur-md p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[150] flex items-center justify-center bg-[var(--primary-700)]/30 backdrop-blur-md p-4 animate-in fade-in duration-200">
       <div className="bg-white w-full max-w-xl rounded-[3.5rem] shadow-2xl overflow-hidden animate-in zoom-in duration-300 flex flex-col h-[75vh]">
         {/* Header */}
         <div className="p-10 border-b border-gray-50 flex justify-between items-center bg-white sticky top-0 z-10">
           <div>
-            <h2 className="text-2xl font-black text-[#333984]">Lịch bàn {table.number}</h2>
+            <h2 className="text-2xl font-black text-[var(--primary-700)]">Lịch bàn {table.number}</h2>
             <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest mt-1">Xem danh sách đặt bàn chi tiết</p>
           </div>
           <button onClick={onClose} className="p-3 bg-gray-100 text-gray-500 hover:bg-gray-200 rounded-full transition-all">
@@ -34,12 +34,12 @@ const ReservationScheduleModal: React.FC<ReservationScheduleModalProps> = ({ tab
         {/* Date Selector */}
         <div className="px-10 py-6 bg-slate-50/50 border-b border-slate-50">
           <div className="relative max-w-xs mx-auto">
-            <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-[#2A46FF]" size={18} />
+            <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--primary-600)]" size={18} />
             <input 
               type="date" 
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-full bg-white border border-slate-200 rounded-2xl pl-12 pr-4 py-3 font-black text-sm text-[#333984] outline-none focus:border-[#2A46FF] transition-all"
+              className="w-full bg-white border border-slate-200 rounded-2xl pl-12 pr-4 py-3 font-black text-sm text-[var(--primary-700)] outline-none focus:border-[var(--primary-600)] transition-all"
             />
           </div>
         </div>
@@ -50,17 +50,17 @@ const ReservationScheduleModal: React.FC<ReservationScheduleModalProps> = ({ tab
             dailyReservations.map((res) => (
               <div key={res.id} className="relative pl-12 before:content-[''] before:absolute before:left-[1.125rem] before:top-8 before:bottom-[-1.5rem] before:w-0.5 before:bg-slate-100 last:before:hidden">
                 {/* Time Indicator Circle */}
-                <div className="absolute left-0 top-1.5 w-10 h-10 rounded-full bg-blue-50 text-[#2A46FF] flex items-center justify-center z-10 border-4 border-white shadow-sm font-black text-[10px]">
+                <div className="absolute left-0 top-1.5 w-10 h-10 rounded-full bg-blue-50 text-[var(--primary-600)] flex items-center justify-center z-10 border-4 border-white shadow-sm font-black text-[10px]">
                   {res.startTime}
                 </div>
                 
-                <div className="bg-slate-50 border border-slate-100 p-6 rounded-[2rem] hover:bg-white hover:border-blue-100 hover:shadow-xl hover:shadow-blue-50/50 transition-all group">
+                <div className="bg-slate-50 border border-slate-100 p-6 rounded-[2rem] hover:bg-white hover:border-blue-100 hover:shadow-xl hover:shadow-primary-100/50 transition-all group">
                    <div className="flex justify-between items-start mb-4">
                       <div className="flex items-center gap-3">
-                         <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center font-black text-[#333984] text-xs">
+                         <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center font-black text-[var(--primary-700)] text-xs">
                            {res.customerName.charAt(0)}
                          </div>
-                         <p className="font-black text-[#333984]">{res.customerName}</p>
+                         <p className="font-black text-[var(--primary-700)]">{res.customerName}</p>
                       </div>
                       <span className="px-3 py-1 bg-white text-emerald-500 rounded-lg text-[8px] font-black uppercase tracking-widest border border-emerald-50">
                         ĐÃ XÁC NHẬN

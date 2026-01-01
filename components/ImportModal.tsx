@@ -47,11 +47,11 @@ const ImportModal: React.FC<ImportModalProps> = ({ entityName, templateHeaders, 
   };
 
   return (
-    <div className="fixed inset-0 z-[250] flex items-center justify-center bg-[#333984]/30 backdrop-blur-md p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[250] flex items-center justify-center bg-[var(--primary-700)]/30 backdrop-blur-md p-4 animate-in fade-in duration-200">
       <div className="bg-white w-full max-w-lg rounded-[3.5rem] p-10 shadow-2xl animate-in zoom-in duration-300">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h2 className="text-2xl font-black text-[#333984]">Import {entityName}</h2>
+            <h2 className="text-2xl font-black text-[var(--primary-700)]">Import {entityName}</h2>
             <p className="text-gray-400 font-bold text-xs uppercase tracking-widest mt-1">Bulk Data Ingestion</p>
           </div>
           <button onClick={onClose} className="p-3 bg-gray-100 text-gray-500 hover:bg-gray-200 rounded-full transition-all">
@@ -61,7 +61,7 @@ const ImportModal: React.FC<ImportModalProps> = ({ entityName, templateHeaders, 
 
         <div className="space-y-6">
           <div className="bg-blue-50 p-6 rounded-[2rem] flex items-start gap-4">
-            <div className="p-3 bg-white rounded-xl text-[#2A46FF] shadow-sm">
+            <div className="p-3 bg-white rounded-xl text-[var(--primary-600)] shadow-sm">
               <AlertCircle size={20} />
             </div>
             <p className="text-xs font-bold text-blue-700 leading-relaxed">
@@ -72,17 +72,17 @@ const ImportModal: React.FC<ImportModalProps> = ({ entityName, templateHeaders, 
           <div className="grid grid-cols-1 gap-4">
             <button 
               onClick={downloadTemplate}
-              className="w-full p-8 border-2 border-dashed border-gray-100 rounded-[2.5rem] flex flex-col items-center gap-3 hover:border-[#2A46FF] hover:bg-blue-50/20 transition-all group"
+              className="w-full p-8 border-2 border-dashed border-gray-100 rounded-[2.5rem] flex flex-col items-center gap-3 hover:border-[var(--primary-600)] hover:bg-blue-50/20 transition-all group"
             >
-              <div className="p-4 bg-gray-50 text-gray-400 rounded-2xl group-hover:bg-white group-hover:text-[#2A46FF] transition-all">
+              <div className="p-4 bg-gray-50 text-gray-400 rounded-2xl group-hover:bg-white group-hover:text-[var(--primary-600)] transition-all">
                 <Download size={24} strokeWidth={2.5} />
               </div>
-              <span className="font-black text-[#333984] text-sm uppercase tracking-widest">1. Download Template</span>
+              <span className="font-black text-[var(--primary-700)] text-sm uppercase tracking-widest">1. Download Template</span>
             </button>
 
             <button 
               onClick={() => fileInputRef.current?.click()}
-              className="w-full p-8 bg-[#333984] rounded-[2.5rem] flex flex-col items-center gap-3 hover:bg-[#2A46FF] transition-all group shadow-xl shadow-blue-50"
+              className="w-full p-8 bg-[var(--primary-700)] rounded-[2.5rem] flex flex-col items-center gap-3 hover:bg-[var(--primary-600)] transition-all group shadow-xl shadow-primary-100"
             >
               <div className="p-4 bg-white/10 text-white rounded-2xl group-hover:scale-110 transition-all">
                 <Upload size={24} strokeWidth={2.5} />

@@ -230,7 +230,7 @@ const MergeOrderModal: React.FC<MergeOrderModalProps> = ({
                     <button
                         onClick={handleConfirm}
                         disabled={!canMerge}
-                        className="px-8 py-4 bg-blue-500 text-white font-bold rounded-2xl shadow-xl shadow-blue-500/20 hover:bg-blue-600 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-3"
+                        className="px-8 py-4 bg-blue-500 text-white font-bold rounded-2xl shadow-xl shadow-primary-1000/20 hover:bg-blue-600 transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-3"
                     >
                         <Merge size={18} />
                         Gộp {selectedDraftIds.size + (includeCurrentCart ? 1 : 0)} đơn

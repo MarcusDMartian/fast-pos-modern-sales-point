@@ -1,5 +1,5 @@
-
 import React, { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useStore } from '../store';
 import {
    Users, Calendar, Clock, Award, DollarSign, Search, Plus, Filter,
@@ -7,6 +7,7 @@ import {
    CalendarDays, FileText, Briefcase, ChevronLeft, ChevronRight, Check, X
 } from 'lucide-react';
 import { Attendance, Employee } from '../types';
+import { formatCurrency } from '../utils/formatters';
 import EmployeeModal from '../components/EmployeeModal';
 
 type HRMTab = 'employees' | 'schedule' | 'payroll' | 'leave';
@@ -68,7 +69,8 @@ const MOCK_LEAVES: LeaveRequest[] = [
 ];
 
 const Staff: React.FC = () => {
-   const { employees, addEmployee, updateEmployee, attendanceRecords, orders, showToast } = useStore();
+   const { t } = useTranslation();
+   const { employees, addEmployee, updateEmployee, attendanceRecords, showToast, enterpriseConfig } = useStore();
    const [activeTab, setActiveTab] = useState<HRMTab>('employees');
    const [showEmployeeModal, setShowEmployeeModal] = useState(false);
    const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
@@ -76,10 +78,6 @@ const Staff: React.FC = () => {
    const [payroll] = useState<PayrollRecord[]>(MOCK_PAYROLL);
    const [leaves, setLeaves] = useState<LeaveRequest[]>(MOCK_LEAVES);
    const [currentWeek, setCurrentWeek] = useState(new Date());
-
-   const activeAttendances = useMemo(() => {
-      return attendanceRecords.filter(r => !r.checkOutTime);
-   }, [attendanceRecords]);
 
    const roleStats = useMemo(() => {
       return [
@@ -113,12 +111,12 @@ const Staff: React.FC = () => {
 
    const handleApproveLeave = (id: string) => {
       setLeaves(leaves.map(l => l.id === id ? { ...l, status: 'approved', approvedBy: 'Manager' } : l));
-      showToast('Đã duyệt đơn nghỉ phép!', 'success');
+      showToast(t('common.success'), 'success');
    };
 
    const handleRejectLeave = (id: string) => {
       setLeaves(leaves.map(l => l.id === id ? { ...l, status: 'rejected' } : l));
-      showToast('Đã từ chối đơn nghỉ phép!', 'error');
+      showToast(t('common.error'), 'error');
    };
 
    const getShiftTypeStyle = (type: string) => {
@@ -141,6 +139,15 @@ const Staff: React.FC = () => {
       return styles[type] || 'bg-slate-50 text-slate-500';
    };
 
+   const getLeaveTypeLabel = (type: string) => {
+      switch (type) {
+         case 'annual': return t('staff.leave_annual');
+         case 'sick': return t('staff.leave_sick');
+         case 'unpaid': return t('staff.leave_unpaid');
+         default: return type;
+      }
+   }
+
    const getStatusStyle = (status: string) => {
       const styles: Record<string, string> = {
          pending: 'bg-amber-50 text-amber-600 border-amber-100',
@@ -162,41 +169,41 @@ const Staff: React.FC = () => {
    }, [currentWeek]);
 
    return (
-      <div className="p-8">
+      <div className="p-3 md:p-8 max-w-7xl mx-auto space-y-6 md:space-y-10">
          {/* Header */}
-         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-               <h1 className="text-3xl font-black text-slate-800 mb-2 flex items-center gap-3">
+               <h1 className="text-xl md:text-3xl font-black text-slate-800 flex items-center gap-3">
                   <Users size={28} className="text-primary" />
-                  Nhân sự & HRM
+                  {t('staff.title')}
                </h1>
-               <p className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.2em]">
-                  Quản lý nhân viên, ca làm, bảng lương, nghỉ phép
+               <p className="hidden md:block text-slate-400 font-bold text-[10px] uppercase tracking-[0.2em] mt-2">
+                  {t('sidebar.team_hrm')}
                </p>
             </div>
             <button
                onClick={() => setShowEmployeeModal(true)}
-               className="px-6 py-4 bg-primary text-white font-bold rounded-2xl flex items-center gap-2 shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all"
+               className="px-6 py-3 bg-primary text-white font-bold rounded-xl flex items-center gap-2 shadow-lg hover:brightness-110 transition-all whitespace-nowrap"
             >
                <Plus size={18} />
-               Thêm nhân viên
+               <span>{t('staff.add_employee')}</span>
             </button>
          </div>
 
          {/* Tabs */}
-         <div className="flex items-center gap-2 mb-8 overflow-x-auto">
+         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2">
             {[
-               { id: 'employees', label: 'Nhân viên', icon: Users },
-               { id: 'schedule', label: 'Lịch làm việc', icon: CalendarDays },
-               { id: 'payroll', label: 'Bảng lương', icon: DollarSign },
-               { id: 'leave', label: 'Nghỉ phép', icon: Briefcase },
+               { id: 'employees', label: t('sidebar.staff'), icon: Users },
+               { id: 'schedule', label: t('staff.attendance'), icon: CalendarDays },
+               { id: 'payroll', label: t('staff.payroll'), icon: DollarSign },
+               { id: 'leave', label: t('staff.leave_requests'), icon: Briefcase },
             ].map(tab => (
                <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as HRMTab)}
-                  className={`px-5 py-3 rounded-2xl font-bold text-sm flex items-center gap-2 transition-all whitespace-nowrap ${activeTab === tab.id
-                        ? 'bg-primary text-white shadow-xl shadow-primary/20'
-                        : 'bg-white/50 text-slate-500 hover:bg-white'
+                  className={`px-6 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-all whitespace-nowrap ${activeTab === tab.id
+                     ? 'bg-slate-900 text-white shadow-lg'
+                     : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-100'
                      }`}
                >
                   <tab.icon size={16} />
@@ -205,235 +212,243 @@ const Staff: React.FC = () => {
             ))}
          </div>
 
-         {/* Employees Tab */}
-         {activeTab === 'employees' && (
-            <div className="space-y-8 animate-in fade-in duration-300">
-               {/* Stats */}
-               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {roleStats.map((role, idx) => (
-                     <div key={idx} className="glass-card p-6 flex items-center gap-4">
-                        <div className={`p-3 rounded-xl ${role.bg} ${role.color}`}><role.icon size={20} /></div>
-                        <div>
-                           <p className="text-[10px] font-bold text-slate-400 uppercase">{role.role}</p>
-                           <p className="font-black text-xl text-slate-800">{role.count}</p>
-                        </div>
-                     </div>
-                  ))}
-               </div>
-
-               {/* Employee Grid */}
-               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {employees.map(emp => (
-                     <div key={emp.id} className="glass-card p-6 hover:shadow-xl transition-all">
-                        <div className="flex items-start justify-between mb-4">
-                           <div className="flex items-center gap-4">
-                              <img
-                                 src={emp.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(emp.name)}&background=random`}
-                                 className="w-14 h-14 rounded-2xl object-cover"
-                              />
-                              <div>
-                                 <h3 className="font-black text-slate-800">{emp.name}</h3>
-                                 <p className="text-xs font-bold text-primary uppercase">{emp.role}</p>
+         {/* Content */}
+         <div className="animate-in fade-in duration-500">
+            {activeTab === 'employees' && (
+               <div className="space-y-8">
+                  {/* Role Stats */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                     {roleStats.map((role, idx) => (
+                        <div key={idx} className="glass-card p-4 md:p-6 flex flex-col gap-4">
+                           <div className="flex items-center justify-between">
+                              <div className={`p-3 rounded-xl ${role.bg} ${role.color}`}>
+                                 <role.icon size={20} />
                               </div>
                            </div>
-                           <div className={`w-3 h-3 rounded-full ${emp.checkInStatus === 'checked_in' ? 'bg-emerald-500' : 'bg-slate-200'}`} />
-                        </div>
-                        <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                           <p className="text-xs text-slate-400">{emp.id}</p>
-                           <button
-                              onClick={() => { setEditingEmployee(emp); setShowEmployeeModal(true); }}
-                              className="p-2 bg-slate-50 text-slate-400 rounded-lg hover:bg-primary hover:text-white transition-all"
-                           >
-                              <Edit size={14} />
-                           </button>
-                        </div>
-                     </div>
-                  ))}
-               </div>
-            </div>
-         )}
-
-         {/* Schedule Tab */}
-         {activeTab === 'schedule' && (
-            <div className="space-y-6 animate-in fade-in duration-300">
-               <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                     <button
-                        onClick={() => setCurrentWeek(new Date(currentWeek.setDate(currentWeek.getDate() - 7)))}
-                        className="p-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50"
-                     ><ChevronLeft size={18} /></button>
-                     <h3 className="font-bold text-slate-800">
-                        Tuần {weekDays[0].toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })} - {weekDays[6].toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}
-                     </h3>
-                     <button
-                        onClick={() => setCurrentWeek(new Date(currentWeek.setDate(currentWeek.getDate() + 7)))}
-                        className="p-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50"
-                     ><ChevronRight size={18} /></button>
-                  </div>
-                  <button className="px-4 py-2 bg-primary text-white font-bold rounded-xl text-sm flex items-center gap-2">
-                     <Plus size={16} />
-                     Thêm ca làm
-                  </button>
-               </div>
-
-               <div className="glass-card overflow-hidden">
-                  <div className="grid grid-cols-8 border-b border-slate-100">
-                     <div className="p-4 bg-slate-50 font-bold text-slate-400 text-xs uppercase">Nhân viên</div>
-                     {weekDays.map((day, idx) => (
-                        <div key={idx} className={`p-4 text-center ${day.toDateString() === new Date().toDateString() ? 'bg-primary/10' : 'bg-slate-50'}`}>
-                           <p className="text-[10px] font-bold text-slate-400 uppercase">{day.toLocaleDateString('vi-VN', { weekday: 'short' })}</p>
-                           <p className="font-black text-slate-800">{day.getDate()}</p>
+                           <div>
+                              <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-1">{role.role}</p>
+                              <h3 className="text-xl md:text-2xl font-black text-slate-800">{role.count}</h3>
+                           </div>
                         </div>
                      ))}
                   </div>
 
-                  {employees.slice(0, 5).map(emp => (
-                     <div key={emp.id} className="grid grid-cols-8 border-b border-slate-50 hover:bg-white/50 transition-colors">
-                        <div className="p-4 flex items-center gap-3">
-                           <img src={emp.avatar} className="w-8 h-8 rounded-lg object-cover" />
-                           <span className="font-bold text-slate-800 text-sm truncate">{emp.name}</span>
-                        </div>
-                        {weekDays.map((day, idx) => {
-                           const dayStr = day.toISOString().split('T')[0];
-                           const shift = shifts.find(s => s.employeeId === emp.id.replace('EMP-', 'E') && s.date === dayStr);
-                           return (
-                              <div key={idx} className="p-2 flex items-center justify-center">
-                                 {shift ? (
-                                    <span className={`px-2 py-1 rounded-lg text-[10px] font-bold uppercase ${getShiftTypeStyle(shift.type)}`}>
-                                       {shift.startTime}-{shift.endTime}
-                                    </span>
-                                 ) : (
-                                    <span className="text-slate-200">—</span>
-                                 )}
+                  {/* Employee Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                     {employees.map(emp => (
+                        <div key={emp.id} className="glass-card p-6 group hover:shadow-2xl transition-all border-b-4 border-transparent hover:border-primary">
+                           <div className="flex items-start justify-between mb-6">
+                              <div className="flex items-center gap-4">
+                                 <img
+                                    src={emp.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(emp.name)}&background=random`}
+                                    className="w-14 h-14 rounded-2xl object-cover border border-slate-100 shadow-sm"
+                                 />
+                                 <div>
+                                    <h3 className="font-black text-slate-800">{emp.name}</h3>
+                                    <p className="text-[10px] font-extrabold text-primary uppercase tracking-widest mt-1">{emp.role}</p>
+                                 </div>
                               </div>
-                           );
-                        })}
-                     </div>
-                  ))}
-               </div>
-            </div>
-         )}
+                              <div className={`w-3 h-3 rounded-full border-4 border-white shadow-sm ${emp.checkInStatus === 'checked_in' ? 'bg-emerald-500' : 'bg-slate-200'}`} />
+                           </div>
 
-         {/* Payroll Tab */}
-         {activeTab === 'payroll' && (
-            <div className="space-y-6 animate-in fade-in duration-300">
-               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div className="glass-card p-6">
-                     <p className="text-[10px] font-bold text-slate-400 uppercase mb-2">Tổng quỹ lương</p>
-                     <p className="font-black text-2xl text-primary">{payroll.reduce((sum, p) => sum + p.netPay, 0).toLocaleString()}₫</p>
-                  </div>
-                  <div className="glass-card p-6">
-                     <p className="text-[10px] font-bold text-slate-400 uppercase mb-2">Đã thanh toán</p>
-                     <p className="font-black text-2xl text-emerald-500">{payroll.filter(p => p.status === 'paid').reduce((sum, p) => sum + p.netPay, 0).toLocaleString()}₫</p>
-                  </div>
-                  <div className="glass-card p-6">
-                     <p className="text-[10px] font-bold text-slate-400 uppercase mb-2">Chờ thanh toán</p>
-                     <p className="font-black text-2xl text-amber-500">{payroll.filter(p => p.status === 'pending').reduce((sum, p) => sum + p.netPay, 0).toLocaleString()}₫</p>
-                  </div>
-                  <div className="glass-card p-6">
-                     <p className="text-[10px] font-bold text-slate-400 uppercase mb-2">Số nhân viên</p>
-                     <p className="font-black text-2xl text-slate-800">{payroll.length}</p>
-                  </div>
-               </div>
-
-               <div className="glass-card overflow-hidden">
-                  <table className="w-full">
-                     <thead>
-                        <tr className="bg-slate-50 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                           <th className="text-left p-4 pl-6">Nhân viên</th>
-                           <th className="text-right p-4">Lương cơ bản</th>
-                           <th className="text-right p-4">Tăng ca</th>
-                           <th className="text-right p-4">Thưởng</th>
-                           <th className="text-right p-4">Khấu trừ</th>
-                           <th className="text-right p-4">Thực nhận</th>
-                           <th className="text-center p-4 pr-6">Trạng thái</th>
-                        </tr>
-                     </thead>
-                     <tbody>
-                        {payroll.map(record => (
-                           <tr key={record.id} className="border-t border-slate-50 hover:bg-white/50">
-                              <td className="p-4 pl-6 font-bold text-slate-800">{record.employeeName}</td>
-                              <td className="p-4 text-right text-slate-600">{record.baseSalary.toLocaleString()}₫</td>
-                              <td className="p-4 text-right text-blue-500">+{record.overtime.toLocaleString()}₫</td>
-                              <td className="p-4 text-right text-emerald-500">+{record.bonus.toLocaleString()}₫</td>
-                              <td className="p-4 text-right text-red-500">-{record.deductions.toLocaleString()}₫</td>
-                              <td className="p-4 text-right font-black text-primary text-lg">{record.netPay.toLocaleString()}₫</td>
-                              <td className="p-4 pr-6 text-center">
-                                 <span className={`px-3 py-1 rounded-lg border text-[10px] font-bold uppercase ${getStatusStyle(record.status)}`}>
-                                    {record.status === 'paid' ? 'Đã trả' : 'Chờ trả'}
-                                 </span>
-                              </td>
-                           </tr>
-                        ))}
-                     </tbody>
-                  </table>
-               </div>
-            </div>
-         )}
-
-         {/* Leave Tab */}
-         {activeTab === 'leave' && (
-            <div className="space-y-6 animate-in fade-in duration-300">
-               <div className="flex items-center justify-between">
-                  <p className="text-slate-500 font-medium">{leaves.filter(l => l.status === 'pending').length} đơn chờ duyệt</p>
-                  <button className="px-4 py-2 bg-primary text-white font-bold rounded-xl text-sm flex items-center gap-2">
-                     <Plus size={16} />
-                     Tạo đơn nghỉ
-                  </button>
-               </div>
-
-               <div className="space-y-4">
-                  {leaves.map(leave => (
-                     <div key={leave.id} className="glass-card p-6">
-                        <div className="flex items-start justify-between">
-                           <div className="flex items-center gap-4">
-                              <div className={`p-3 rounded-xl ${getLeaveTypeStyle(leave.type)}`}>
-                                 <Briefcase size={20} />
-                              </div>
-                              <div>
-                                 <h3 className="font-bold text-slate-800">{leave.employeeName}</h3>
-                                 <p className="text-sm text-slate-500">
-                                    {new Date(leave.startDate).toLocaleDateString('vi-VN')}
-                                    {leave.startDate !== leave.endDate && ` - ${new Date(leave.endDate).toLocaleDateString('vi-VN')}`}
-                                 </p>
-                                 <p className="text-xs text-slate-400 mt-1">{leave.reason}</p>
+                           <div className="flex items-center justify-between pt-4 border-t border-slate-50">
+                              <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">{emp.id}</p>
+                              <div className="flex items-center gap-2">
+                                 <button
+                                    onClick={() => { setEditingEmployee(emp); setShowEmployeeModal(true); }}
+                                    className="p-2 text-slate-300 hover:text-primary transition-colors"
+                                 >
+                                    <Edit size={18} />
+                                 </button>
+                                 <button className="p-2 text-slate-300 hover:text-red-500 transition-colors">
+                                    <Trash2 size={18} />
+                                 </button>
                               </div>
                            </div>
-                           <div className="flex items-center gap-3">
-                              <span className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase ${getLeaveTypeStyle(leave.type)}`}>
-                                 {leave.type === 'annual' && 'Phép năm'}
-                                 {leave.type === 'sick' && 'Ốm'}
-                                 {leave.type === 'personal' && 'Việc riêng'}
-                                 {leave.type === 'unpaid' && 'Không lương'}
+                        </div>
+                     ))}
+                  </div>
+               </div>
+            )}
+
+            {activeTab === 'schedule' && (
+               <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                     <div className="flex items-center gap-4 bg-white p-2 rounded-2xl border border-slate-100 shadow-sm">
+                        <button
+                           onClick={() => setCurrentWeek(new Date(currentWeek.setDate(currentWeek.getDate() - 7)))}
+                           className="p-2 hover:bg-slate-50 rounded-xl transition-colors text-slate-400"
+                        ><ChevronLeft size={20} /></button>
+                        <h3 className="font-black text-slate-800 px-4 text-sm uppercase tracking-wide">
+                           {weekDays[0].toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })} — {weekDays[6].toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}
+                        </h3>
+                        <button
+                           onClick={() => setCurrentWeek(new Date(currentWeek.setDate(currentWeek.getDate() + 7)))}
+                           className="p-2 hover:bg-slate-50 rounded-xl transition-colors text-slate-400"
+                        ><ChevronRight size={20} /></button>
+                     </div>
+                  </div>
+
+                  <div className="glass-card overflow-hidden">
+                     <div className="overflow-x-auto">
+                        <table className="w-full text-center">
+                           <thead>
+                              <tr className="bg-slate-50 border-b border-slate-100">
+                                 <th className="p-6 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none w-[200px]">{t('staff.employee_name')}</th>
+                                 {weekDays.map((day, idx) => (
+                                    <th key={idx} className={`p-6 ${day.toDateString() === new Date().toDateString() ? 'bg-primary/5' : ''}`}>
+                                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{day.toLocaleDateString('vi-VN', { weekday: 'short' })}</p>
+                                       <p className="font-black text-slate-800">{day.getDate()}</p>
+                                    </th>
+                                 ))}
+                              </tr>
+                           </thead>
+                           <tbody className="divide-y divide-slate-50">
+                              {employees.slice(0, 5).map(emp => (
+                                 <tr key={emp.id} className="hover:bg-slate-50/50 transition-colors">
+                                    <td className="p-6 text-left">
+                                       <div className="flex items-center gap-3">
+                                          <img src={emp.avatar} className="w-10 h-10 rounded-xl object-cover border border-slate-100 shadow-sm" />
+                                          <span className="font-black text-slate-800 text-sm">{emp.name}</span>
+                                       </div>
+                                    </td>
+                                    {weekDays.map((day, idx) => {
+                                       const dayStr = day.toISOString().split('T')[0];
+                                       const shift = shifts.find(s => s.employeeId === emp.id.replace('EMP-', 'E') && s.date === dayStr);
+                                       return (
+                                          <td key={idx} className={`p-4 ${day.toDateString() === new Date().toDateString() ? 'bg-primary/5' : ''}`}>
+                                             {shift ? (
+                                                <span className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-wider border ${getShiftTypeStyle(shift.type)}`}>
+                                                   {shift.startTime} - {shift.endTime}
+                                                </span>
+                                             ) : (
+                                                <span className="text-slate-200">—</span>
+                                             )}
+                                          </td>
+                                       );
+                                    })}
+                                 </tr>
+                              ))}
+                           </tbody>
+                        </table>
+                     </div>
+                  </div>
+               </div>
+            )}
+
+            {activeTab === 'payroll' && (
+               <div className="space-y-8">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                     {[
+                        { label: 'Total Payroll', val: payroll.reduce((sum, p) => sum + p.netPay, 0), color: 'text-primary', bg: 'bg-primary/5' },
+                        { label: 'Paid Amount', val: payroll.filter(p => p.status === 'paid').reduce((sum, p) => sum + p.netPay, 0), color: 'text-emerald-500', bg: 'bg-emerald-50' },
+                        { label: 'Pending Disbursement', val: payroll.filter(p => p.status === 'pending').reduce((sum, p) => sum + p.netPay, 0), color: 'text-amber-500', bg: 'bg-amber-50' },
+                        { label: 'Headcount', val: payroll.length, color: 'text-slate-800', bg: 'bg-slate-50', isMoney: false },
+                     ].map((stat, i) => (
+                        <div key={i} className="glass-card p-6 flex flex-col gap-4">
+                           <div>
+                              <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-1">{stat.label}</p>
+                              <h3 className={`text-xl md:text-2xl font-black ${stat.color}`}>
+                                 {stat.isMoney === false ? stat.val : formatCurrency(stat.val as number, enterpriseConfig.currency)}
+                              </h3>
+                           </div>
+                        </div>
+                     ))}
+                  </div>
+
+                  <div className="glass-card overflow-hidden">
+                     <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
+                           <thead>
+                              <tr className="bg-slate-50 border-b border-slate-100">
+                                 <th className="p-6 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">{t('staff.employee_name')}</th>
+                                 <th className="p-6 text-right text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Base Salary</th>
+                                 <th className="p-6 text-right text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Net Pay</th>
+                                 <th className="p-6 text-center text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">{t('staff.status')}</th>
+                                 <th className="p-6 text-right text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none"></th>
+                              </tr>
+                           </thead>
+                           <tbody className="divide-y divide-slate-50">
+                              {payroll.map(record => (
+                                 <tr key={record.id} className="hover:bg-slate-50/50 transition-colors">
+                                    <td className="p-6 font-black text-slate-800">{record.employeeName}</td>
+                                    <td className="p-6 text-right font-bold text-slate-400">{formatCurrency(record.baseSalary, enterpriseConfig.currency)}</td>
+                                    <td className="p-6 text-right font-black text-slate-900 text-lg">{formatCurrency(record.netPay, enterpriseConfig.currency)}</td>
+                                    <td className="p-6 text-center">
+                                       <span className={`px-3 py-1 rounded-lg border text-[10px] font-black uppercase tracking-widest ${getStatusStyle(record.status)}`}>
+                                          {record.status === 'paid' ? 'Paid' : 'Unpaid'}
+                                       </span>
+                                    </td>
+                                    <td className="p-6 text-right">
+                                       <button className="p-2 text-slate-300 hover:text-primary transition-colors"><FileText size={18} /></button>
+                                    </td>
+                                 </tr>
+                              ))}
+                           </tbody>
+                        </table>
+                     </div>
+                  </div>
+               </div>
+            )}
+
+            {activeTab === 'leave' && (
+               <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                     <p className="font-bold text-slate-400 text-xs uppercase tracking-widest">{leaves.filter(l => l.status === 'pending').length} Action Required</p>
+                  </div>
+
+                  <div className="space-y-4">
+                     {leaves.map(leave => (
+                        <div key={leave.id} className="glass-card p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:shadow-xl transition-all">
+                           <div className="flex items-center gap-6">
+                              <div className={`p-4 rounded-2xl ${getLeaveTypeStyle(leave.type)} border border-current opacity-20`}>
+                                 <Briefcase size={24} />
+                              </div>
+                              <div className="-ml-[4.5rem] flex items-center gap-6">
+                                 <div className={`p-4 rounded-2xl ${getLeaveTypeStyle(leave.type)}`}>
+                                    <Briefcase size={24} />
+                                 </div>
+                                 <div>
+                                    <h4 className="font-black text-slate-800 text-lg">{leave.employeeName}</h4>
+                                    <p className="text-sm font-bold text-slate-400">
+                                       {new Date(leave.startDate).toLocaleDateString('vi-VN')}
+                                       {leave.startDate !== leave.endDate && ` — ${new Date(leave.endDate).toLocaleDateString('vi-VN')}`}
+                                    </p>
+                                    <p className="text-[10px] font-extrabold text-slate-300 italic mt-1 uppercase tracking-wider">{leave.reason}</p>
+                                 </div>
+                              </div>
+                           </div>
+
+                           <div className="flex items-center gap-4">
+                              <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${getLeaveTypeStyle(leave.type)}`}>
+                                 {getLeaveTypeLabel(leave.type)}
                               </span>
-                              <span className={`px-3 py-1 rounded-lg border text-[10px] font-bold uppercase ${getStatusStyle(leave.status)}`}>
-                                 {leave.status === 'pending' && 'Chờ duyệt'}
-                                 {leave.status === 'approved' && 'Đã duyệt'}
-                                 {leave.status === 'rejected' && 'Từ chối'}
+                              <span className={`px-3 py-1 rounded-lg border text-[9px] font-black uppercase tracking-widest ${getStatusStyle(leave.status)}`}>
+                                 {leave.status}
                               </span>
                               {leave.status === 'pending' && (
-                                 <div className="flex gap-2">
-                                    <button
-                                       onClick={() => handleApproveLeave(leave.id)}
-                                       className="p-2 bg-emerald-50 text-emerald-500 rounded-lg hover:bg-emerald-500 hover:text-white transition-all"
-                                    >
-                                       <Check size={14} />
-                                    </button>
+                                 <div className="flex gap-2 ml-4">
                                     <button
                                        onClick={() => handleRejectLeave(leave.id)}
-                                       className="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-500 hover:text-white transition-all"
+                                       className="p-3 bg-red-50 text-red-500 rounded-xl hover:bg-red-500 hover:text-white transition-all shadow-sm"
                                     >
-                                       <X size={14} />
+                                       <XCircle size={18} />
+                                    </button>
+                                    <button
+                                       onClick={() => handleApproveLeave(leave.id)}
+                                       className="p-3 bg-emerald-50 text-emerald-500 rounded-xl hover:bg-emerald-500 hover:text-white transition-all shadow-sm"
+                                    >
+                                       <CheckCircle2 size={18} />
                                     </button>
                                  </div>
                               )}
                            </div>
                         </div>
-                     </div>
-                  ))}
+                     ))}
+                  </div>
                </div>
-            </div>
-         )}
+            )}
+         </div>
 
          {(showEmployeeModal || editingEmployee) && (
             <EmployeeModal
@@ -445,5 +460,8 @@ const Staff: React.FC = () => {
       </div>
    );
 };
+
+const XCircle = X;
+const CheckCircle2 = Check;
 
 export default Staff;

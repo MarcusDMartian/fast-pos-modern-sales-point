@@ -153,10 +153,10 @@ export const useStore = create<AppState>()(
             setPromotions: (promotions) => set({ promotions }),
 
             enterpriseConfig: {
-                name: 'Fast POS Global Ltd.',
-                taxId: 'TX-123-4567-89',
-                currency: 'USD ($)',
-                address: '123 Financial District, Suite 500, New York, NY 10001',
+                name: 'Fast POS Vietnam Ltd.',
+                taxId: 'TX-888-9999-123',
+                currency: 'VND (₫)',
+                address: '789 Đường Lê Lợi, Phường Bến Thành, Quận 1, TP. Hồ Chí Minh',
                 logo: 'https://raw.githubusercontent.com/stackblitz/stackblitz-images/main/fastpos-logo.png'
             },
             setEnterpriseConfig: (enterpriseConfig) => set({ enterpriseConfig }),

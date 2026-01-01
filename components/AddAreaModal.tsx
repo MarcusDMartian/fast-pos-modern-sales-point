@@ -17,11 +17,11 @@ const AddAreaModal: React.FC<AddAreaModalProps> = ({ onClose, onConfirm }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[#333984]/30 backdrop-blur-md p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[var(--primary-700)]/30 backdrop-blur-md p-4 animate-in fade-in duration-200">
       <div className="bg-white w-full max-w-md rounded-[3.5rem] p-10 shadow-2xl animate-in zoom-in duration-300">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h2 className="text-2xl font-black text-[#333984]">Thêm Khu vực</h2>
+            <h2 className="text-2xl font-black text-[var(--primary-700)]">Thêm Khu vực</h2>
             <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest mt-1">Tạo không gian phục vụ mới</p>
           </div>
           <button onClick={onClose} className="p-3 bg-gray-100 text-gray-500 hover:bg-gray-200 rounded-full transition-all">
@@ -31,7 +31,7 @@ const AddAreaModal: React.FC<AddAreaModalProps> = ({ onClose, onConfirm }) => {
 
         <div className="space-y-6 mb-10">
           <div className="relative">
-            <LayoutGrid className="absolute left-6 top-1/2 -translate-y-1/2 text-[#2A46FF]" size={20} />
+            <LayoutGrid className="absolute left-6 top-1/2 -translate-y-1/2 text-[var(--primary-600)]" size={20} />
             <input
               autoFocus
               type="text"
@@ -39,7 +39,7 @@ const AddAreaModal: React.FC<AddAreaModalProps> = ({ onClose, onConfirm }) => {
               value={name}
               onChange={(e) => setName(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleConfirm()}
-              className="w-full bg-gray-50 pl-16 pr-6 py-6 rounded-[2rem] text-lg font-bold text-[#333984] outline-none border-2 border-transparent focus:border-[#2A46FF] transition-all"
+              className="w-full bg-gray-50 pl-16 pr-6 py-6 rounded-[2rem] text-lg font-bold text-[var(--primary-700)] outline-none border-2 border-transparent focus:border-[var(--primary-600)] transition-all"
             />
           </div>
         </div>
@@ -54,7 +54,7 @@ const AddAreaModal: React.FC<AddAreaModalProps> = ({ onClose, onConfirm }) => {
           <button
             onClick={handleConfirm}
             disabled={!name.trim()}
-            className="py-5 bg-[#2A46FF] text-white font-black rounded-[2rem] flex items-center justify-center gap-2 shadow-xl shadow-blue-100 hover:bg-[#333984] transition-all disabled:opacity-50 uppercase text-[10px] tracking-widest"
+            className="py-5 bg-[var(--primary-600)] text-white font-black rounded-[2rem] flex items-center justify-center gap-2 shadow-xl shadow-primary-200 hover:bg-[var(--primary-700)] transition-all disabled:opacity-50 uppercase text-[10px] tracking-widest"
           >
             <Check size={20} strokeWidth={3} />
             Xác nhận

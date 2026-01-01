@@ -20,13 +20,16 @@ import Promotions from './pages/Promotions';
 import StaffLockScreen from './components/StaffLockScreen';
 import ShiftReportModal from './components/ShiftReportModal';
 import ToastContainer from './components/ToastContainer';
+import SplashScreen from './components/SplashScreen';
 import { Employee, Shift } from './types';
 import { useStore } from './store';
 
 const App: React.FC = () => {
   const { currentUser, setCurrentUser, currentShift, setCurrentShift, themeColor, checkOut } = useStore();
+  const [showSplash, setShowSplash] = useState(true);
   const [showShiftReport, setShowShiftReport] = useState(false);
   const [isMainSidebarMinimized, setIsMainSidebarMinimized] = useState(true);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   useEffect(() => {
     applyThemeColor(themeColor);
@@ -67,6 +70,10 @@ const App: React.FC = () => {
     setShowShiftReport(false);
   };
 
+  if (showSplash) {
+    return <SplashScreen onComplete={() => setShowSplash(false)} />;
+  }
+
   if (!currentUser) {
     return <StaffLockScreen onUnlock={handleUnlock} />;
   }
@@ -75,17 +82,24 @@ const App: React.FC = () => {
     <Router>
       <div className="min-h-screen bg-[#F4F6FF] flex flex-col relative">
         <ToastContainer />
-        <Sidebar onLogout={initiateLogout} currentUser={currentUser} />
+        <Sidebar
+          onLogout={initiateLogout}
+          currentUser={currentUser}
+          onMenuToggle={() => setIsMobileSidebarOpen(true)}
+        />
 
         <div className="flex flex-1">
           <MainSidebar
             isMinimized={isMainSidebarMinimized}
             onToggle={() => setIsMainSidebarMinimized(!isMainSidebarMinimized)}
+            isMobileOpen={isMobileSidebarOpen}
+            onMobileClose={() => setIsMobileSidebarOpen(false)}
           />
 
           <main
-            className={`flex-1 pt-24 transition-all duration-500 ease-in-out ${isMainSidebarMinimized ? 'pl-24' : 'pl-72'
-              } pr-3 pb-3 overflow-x-hidden`}
+            className={`flex-1 pt-20 md:pt-24 transition-all duration-500 ease-in-out 
+              pl-3 pr-3 pb-24 md:pb-3 overflow-x-hidden
+              ${isMainSidebarMinimized ? 'md:pl-28' : 'md:pl-[19rem]'}`}
           >
             <div className="h-full">
               <Routes>
@@ -114,6 +128,11 @@ const App: React.FC = () => {
             employee={currentUser}
             onClose={() => setShowShiftReport(false)}
             onConfirm={handleFinalLogout}
+            onLogout={() => {
+              setCurrentUser(null);
+              setCurrentShift(null);
+              setShowShiftReport(false);
+            }}
           />
         )}
       </div>

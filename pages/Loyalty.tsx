@@ -2,10 +2,11 @@
 import React, { useState } from 'react';
 import { Heart, Sparkles, DollarSign, Save, Loader2 } from 'lucide-react';
 import { useStore } from '../store';
+import { getCurrencySymbol } from '../utils/formatters';
 import { LoyaltyConfig } from '../types';
 
 const Loyalty: React.FC = () => {
-  const { loyaltyConfig, setLoyaltyConfig, showToast } = useStore();
+  const { loyaltyConfig, setLoyaltyConfig, showToast, enterpriseConfig } = useStore();
   const [loyalty, setLoyalty] = useState<LoyaltyConfig>(loyaltyConfig);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -25,9 +26,9 @@ const Loyalty: React.FC = () => {
         <div>
           <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
             <Heart className="text-red-500" size={32} fill="currentColor" />
-            Loyalty Program
+            Chương trình Loyalty
           </h1>
-          <p className="text-slate-400 font-bold text-xs uppercase tracking-widest mt-1">Configure points and membership tiers</p>
+          <p className="text-slate-400 font-bold text-xs uppercase tracking-widest mt-1">Cấu hình tích điểm và hạng thành viên</p>
         </div>
         <button
           onClick={handleSave}
@@ -37,11 +38,11 @@ const Loyalty: React.FC = () => {
           {isSaving ? (
             <>
               <Loader2 size={18} className="animate-spin" />
-              Saving Config...
+              Đang lưu...
             </>
           ) : (
             <>
-              <Save size={18} /> Save Config
+              <Save size={18} /> Lưu cấu hình
             </>
           )}
         </button>
@@ -50,7 +51,7 @@ const Loyalty: React.FC = () => {
       <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
           <div className="bg-slate-50 p-8 rounded-[2rem] space-y-4 border border-slate-100 shadow-inner">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Earning Rate ($1 = X Points)</label>
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Tỷ lệ tích điểm ({getCurrencySymbol(enterpriseConfig.currency)}1 = X Điểm)</label>
             <div className="relative">
               <Sparkles className="absolute left-6 top-1/2 -translate-y-1/2 text-blue-500" size={20} />
               <input
@@ -62,7 +63,7 @@ const Loyalty: React.FC = () => {
             </div>
           </div>
           <div className="bg-slate-50 p-8 rounded-[2rem] space-y-4 border border-slate-100 shadow-inner">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Redemption Rate (X Points = $1)</label>
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Tỷ lệ quy đổi (X Điểm = {getCurrencySymbol(enterpriseConfig.currency)}1)</label>
             <div className="relative">
               <DollarSign className="absolute left-6 top-1/2 -translate-y-1/2 text-emerald-500" size={20} />
               <input
@@ -76,24 +77,24 @@ const Loyalty: React.FC = () => {
         </div>
 
         <div className="space-y-6">
-          <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Membership Tiers</h4>
+          <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Hạng thành viên</h4>
           <div className="grid grid-cols-1 gap-4">
             {loyalty.tiers.map((tier, idx) => (
               <div key={idx} className="flex items-center gap-4 p-5 bg-slate-50 border border-slate-100 rounded-[2rem] hover:bg-white hover:border-blue-200 transition-all group">
                 <div className="flex-1">
-                  <label className="text-[8px] font-black text-slate-400 uppercase mb-1 block">Tier Name</label>
+                  <label className="text-[8px] font-black text-slate-400 uppercase mb-1 block">Tên hạng</label>
                   <input value={tier.name} onChange={(e) => {
                     const newTiers = [...loyalty.tiers]; newTiers[idx].name = e.target.value; setLoyalty({ ...loyalty, tiers: newTiers });
                   }} className="w-full bg-transparent font-black text-slate-900 outline-none" />
                 </div>
                 <div className="w-32">
-                  <label className="text-[8px] font-black text-slate-400 uppercase mb-1 block">Threshold</label>
+                  <label className="text-[8px] font-black text-slate-400 uppercase mb-1 block">Ngưỡng điểm</label>
                   <input type="number" value={tier.threshold} onChange={(e) => {
                     const newTiers = [...loyalty.tiers]; newTiers[idx].threshold = parseFloat(e.target.value); setLoyalty({ ...loyalty, tiers: newTiers });
                   }} className="w-full bg-transparent font-black text-slate-900 outline-none" />
                 </div>
                 <div className="w-20">
-                  <label className="text-[8px] font-black text-slate-400 uppercase mb-1 block">Discount%</label>
+                  <label className="text-[8px] font-black text-slate-400 uppercase mb-1 block">Giảm giá %</label>
                   <input type="number" value={tier.discount} onChange={(e) => {
                     const newTiers = [...loyalty.tiers]; newTiers[idx].discount = parseFloat(e.target.value); setLoyalty({ ...loyalty, tiers: newTiers });
                   }} className="w-full bg-transparent font-black text-blue-600 outline-none" />

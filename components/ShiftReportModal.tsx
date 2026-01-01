@@ -1,17 +1,19 @@
 
 import React, { useState, useEffect } from 'react';
-import { X, Banknote, Calculator, CheckCircle2, AlertTriangle, Clock, TrendingUp, ShoppingBag } from 'lucide-react';
+import { X, Banknote, Calculator, CheckCircle2, AlertTriangle, Clock, TrendingUp, ShoppingBag, LogOut } from 'lucide-react';
 import { Employee, Order } from '../types';
 import { useStore } from '../store';
+import { formatCurrency, getCurrencySymbol } from '../utils/formatters';
 
 interface ShiftReportModalProps {
   employee: Employee;
   onClose: () => void;
   onConfirm: (reportData: any) => void;
+  onLogout?: () => void;
 }
 
-const ShiftReportModal: React.FC<ShiftReportModalProps> = ({ employee, onClose, onConfirm }) => {
-  const { orders } = useStore();
+const ShiftReportModal: React.FC<ShiftReportModalProps> = ({ employee, onClose, onConfirm, onLogout }) => {
+  const { orders, enterpriseConfig } = useStore();
   const [actualCash, setActualCash] = useState('');
   const [step, setStep] = useState<'counting' | 'summary'>('counting');
 
@@ -43,7 +45,18 @@ const ShiftReportModal: React.FC<ShiftReportModalProps> = ({ employee, onClose, 
             <h2 className="text-3xl font-black text-white tracking-tight italic uppercase">Shift Conclusion</h2>
             <p className="text-white/40 font-bold text-[10px] uppercase tracking-widest mt-1">Personnel: {employee.name} • {employee.role}</p>
           </div>
-          <button onClick={onClose} className="p-3 bg-white/5 text-white/50 hover:bg-white/10 hover:text-white rounded-full transition-all"><X /></button>
+          <div className="flex items-center gap-3">
+            {onLogout && (
+              <button
+                onClick={onLogout}
+                className="px-4 py-2 bg-red-500/10 text-red-500 hover:bg-red-500/20 rounded-xl transition-all flex items-center gap-2 text-xs font-black uppercase"
+              >
+                <LogOut size={16} />
+                Đăng xuất
+              </button>
+            )}
+            <button onClick={onClose} className="p-3 bg-white/5 text-white/50 hover:bg-white/10 hover:text-white rounded-full transition-all"><X /></button>
+          </div>
         </div>
 
         <div className="p-10">
@@ -54,7 +67,7 @@ const ShiftReportModal: React.FC<ShiftReportModalProps> = ({ employee, onClose, 
                 <div className="flex-1">
                   <label className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] block mb-3">Actual Cash Processed</label>
                   <div className="flex items-center gap-3">
-                    <span className="text-4xl font-black text-white/20">$</span>
+                    <span className="text-4xl font-black text-white/20">{getCurrencySymbol(enterpriseConfig.currency)}</span>
                     <input
                       autoFocus
                       type="number"
@@ -73,14 +86,14 @@ const ShiftReportModal: React.FC<ShiftReportModalProps> = ({ employee, onClose, 
                     <TrendingUp size={14} className="text-white/20" />
                     <p className="text-[10px] font-black text-white/30 uppercase tracking-widest">Expected In System</p>
                   </div>
-                  <p className="text-3xl font-black text-white">${expectedCash.toFixed(2)}</p>
+                  <p className="text-3xl font-black text-white">{formatCurrency(expectedCash, enterpriseConfig.currency)}</p>
                 </div>
                 <div className={`p-8 rounded-[2rem] border ${discrepancy === 0 ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : 'bg-red-500/10 border-red-500/20 text-red-500'}`}>
                   <div className="flex items-center gap-2 mb-2">
                     <AlertTriangle size={14} className="opacity-50" />
                     <p className="text-[10px] font-black uppercase tracking-widest opacity-50">Variance / Discrepancy</p>
                   </div>
-                  <p className="text-3xl font-black tracking-tight">${discrepancy.toFixed(2)}</p>
+                  <p className="text-3xl font-black tracking-tight">{formatCurrency(discrepancy, enterpriseConfig.currency)}</p>
                 </div>
               </div>
 
@@ -109,7 +122,7 @@ const ShiftReportModal: React.FC<ShiftReportModalProps> = ({ employee, onClose, 
                 <div className="p-6 bg-white/5 rounded-[1.5rem] border border-white/5 text-center">
                   <TrendingUp size={24} className="mx-auto mb-3 text-white/20" />
                   <p className="text-white/30 text-[9px] font-bold uppercase mb-1">Revenue</p>
-                  <p className="text-lg font-black text-white">${totalSales.toFixed(2)}</p>
+                  <p className="text-lg font-black text-white">{formatCurrency(totalSales, enterpriseConfig.currency)}</p>
                 </div>
               </div>
 
@@ -121,7 +134,7 @@ const ShiftReportModal: React.FC<ShiftReportModalProps> = ({ employee, onClose, 
                 <div className="space-y-4">
                   <div className="flex justify-between items-center py-4 border-b border-white/5">
                     <span className="text-xs font-bold text-white/40 uppercase tracking-widest">Base Payout (Estimated)</span>
-                    <span className="text-lg font-black text-white">${(ordersCount * 0.5 + totalSales * 0.05).toFixed(2)}</span>
+                    <span className="text-lg font-black text-white">{formatCurrency((ordersCount * 10000 + totalSales * 0.05), enterpriseConfig.currency)}</span>
                   </div>
                   <div className="flex justify-between items-center py-4 border-b border-white/5">
                     <span className="text-xs font-bold text-white/40 uppercase tracking-widest">Variance Status</span>

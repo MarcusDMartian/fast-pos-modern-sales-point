@@ -32,11 +32,11 @@ const EmployeeModal: React.FC<EmployeeModalProps> = ({ employee, onClose, onSave
     };
 
     return (
-        <div className="fixed inset-0 z-[500] flex items-center justify-center bg-[#333984]/30 backdrop-blur-md p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[500] flex items-center justify-center bg-[var(--primary-700)]/30 backdrop-blur-md p-4 animate-in fade-in duration-200">
             <div className="bg-white w-full max-w-lg rounded-[3rem] p-10 shadow-2xl animate-in zoom-in duration-300">
                 <div className="flex justify-between items-center mb-8">
                     <div>
-                        <h2 className="text-2xl font-black text-[#333984]">{employee ? 'Edit Team Member' : 'New Team Member'}</h2>
+                        <h2 className="text-2xl font-black text-[var(--primary-700)]">{employee ? 'Edit Team Member' : 'New Team Member'}</h2>
                         <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest mt-1">HRM Profile Setup</p>
                     </div>
                     <button onClick={onClose} className="p-3 bg-gray-50 rounded-full hover:bg-gray-100 transition-all"><X /></button>
@@ -54,7 +54,7 @@ const EmployeeModal: React.FC<EmployeeModalProps> = ({ employee, onClose, onSave
                                     value={formData.name}
                                     onChange={e => setFormData({ ...formData, name: e.target.value })}
                                     placeholder="Alex Nguyen"
-                                    className="w-full bg-gray-50 pl-14 pr-6 py-4 rounded-2xl font-bold text-[#333984] outline-none border-2 border-transparent focus:border-[#2A46FF] transition-all"
+                                    className="w-full bg-gray-50 pl-14 pr-6 py-4 rounded-2xl font-bold text-[var(--primary-700)] outline-none border-2 border-transparent focus:border-[var(--primary-600)] transition-all"
                                 />
                             </div>
                         </div>
@@ -70,7 +70,7 @@ const EmployeeModal: React.FC<EmployeeModalProps> = ({ employee, onClose, onSave
                                     value={formData.pin}
                                     onChange={e => setFormData({ ...formData, pin: e.target.value })}
                                     placeholder="1234"
-                                    className="w-full bg-gray-50 pl-14 pr-6 py-4 rounded-2xl font-bold text-[#333984] outline-none border-2 border-transparent focus:border-[#2A46FF] transition-all"
+                                    className="w-full bg-gray-50 pl-14 pr-6 py-4 rounded-2xl font-bold text-[var(--primary-700)] outline-none border-2 border-transparent focus:border-[var(--primary-600)] transition-all"
                                 />
                             </div>
                         </div>
@@ -82,7 +82,7 @@ const EmployeeModal: React.FC<EmployeeModalProps> = ({ employee, onClose, onSave
                                 <select
                                     value={formData.role}
                                     onChange={e => setFormData({ ...formData, role: e.target.value as any })}
-                                    className="w-full bg-gray-50 pl-14 pr-6 py-4 rounded-2xl font-bold text-[#333984] outline-none border-2 border-transparent focus:border-[#2A46FF] transition-all appearance-none"
+                                    className="w-full bg-gray-50 pl-14 pr-6 py-4 rounded-2xl font-bold text-[var(--primary-700)] outline-none border-2 border-transparent focus:border-[var(--primary-600)] transition-all appearance-none"
                                 >
                                     <option value="Admin">System Admin</option>
                                     <option value="Manager">Manager</option>
@@ -102,7 +102,7 @@ const EmployeeModal: React.FC<EmployeeModalProps> = ({ employee, onClose, onSave
                                     value={formData.email}
                                     onChange={e => setFormData({ ...formData, email: e.target.value })}
                                     placeholder="alex@fastpos.com"
-                                    className="w-full bg-gray-50 pl-14 pr-6 py-4 rounded-2xl font-bold text-[#333984] outline-none border-2 border-transparent focus:border-[#2A46FF] transition-all"
+                                    className="w-full bg-gray-50 pl-14 pr-6 py-4 rounded-2xl font-bold text-[var(--primary-700)] outline-none border-2 border-transparent focus:border-[var(--primary-600)] transition-all"
                                 />
                             </div>
                         </div>
@@ -112,13 +112,13 @@ const EmployeeModal: React.FC<EmployeeModalProps> = ({ employee, onClose, onSave
                         <button
                             type="button"
                             onClick={onClose}
-                            className="py-5 bg-gray-50 text-[#333984] font-black rounded-2xl hover:bg-gray-100 transition-all uppercase text-xs tracking-widest"
+                            className="py-5 bg-gray-50 text-[var(--primary-700)] font-black rounded-2xl hover:bg-gray-100 transition-all uppercase text-xs tracking-widest"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
-                            className="py-5 bg-[#2A46FF] text-white font-black rounded-2xl hover:bg-[#333984] transition-all shadow-xl shadow-blue-100 flex items-center justify-center gap-3 uppercase text-xs tracking-widest"
+                            className="py-5 bg-[var(--primary-600)] text-white font-black rounded-2xl hover:bg-[var(--primary-700)] transition-all shadow-xl shadow-primary-200 flex items-center justify-center gap-3 uppercase text-xs tracking-widest"
                         >
                             <Save size={18} /> {employee ? 'Update Member' : 'Create Member'}
                         </button>

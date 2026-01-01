@@ -7,33 +7,74 @@
 
 @theme {
   --font-family-sans: 'Manrope', system-ui, sans-serif;
-  --color-primary: #F57255;
-  --color-primary-light: #f58f78;
-  --color-primary-glow: rgba(245, 114, 85, 0.15);
-  --color-app: #F5F7FA;
+
+  /* Primary - Dark Blue */
+  --color-primary: #364C84;
+  --color-primary-50: #f0f3f9;
+  --color-primary-100: #dce3f2;
+  --color-primary-200: #b9c7e5;
+  --color-primary-300: #8da5d5;
+  --color-primary-400: #6583c5;
+  --color-primary-500: #4766ab;
+  --color-primary-600: #364C84;
+  --color-primary-700: #2d3f6d;
+  --color-primary-800: #243356;
+  --color-primary-900: #1b273f;
+
+  /* Secondary - Light Blue */
+  --color-secondary: #95B1EE;
+  --color-secondary-400: #95B1EE;
+
+  /* Accent - Light Green */
+  --color-accent: #E7F1A8;
+  --color-accent-300: #E7F1A8;
+
+  /* App Background */
+  --color-app: #FFFDF5;
+
+  /* Primary Glow */
+  --color-primary-glow: rgba(54, 76, 132, 0.15);
 }
 
 :root {
-  /* POS Design System Color Tokens */
-  --bg-app: #F5F7FA;
+  /* POS Design System Color Tokens - New Palette */
+  --bg-app: #FFFDF5;
 
-  /* Primary Palette (Coral/Orange) */
-  --primary-500: #F57255;
-  --primary-600: #f58f78;
-  --primary-glow: rgba(245, 114, 85, 0.15);
-  --button-color: #F57255;
+  /* Primary Palette (Dark Blue) */
+  --primary-50: #f0f3f9;
+  --primary-100: #dce3f2;
+  --primary-200: #b9c7e5;
+  --primary-300: #8da5d5;
+  --primary-400: #6583c5;
+  --primary-500: #4766ab;
+  --primary-600: #364C84;
+  --primary-700: #2d3f6d;
+  --primary-800: #243356;
+  --primary-900: #1b273f;
+  --primary-glow: rgba(54, 76, 132, 0.15);
+  --button-color: #364C84;
+
+  /* Secondary Palette (Light Blue) */
+  --secondary-400: #95B1EE;
+  --secondary-500: #7394e3;
+  --secondary-600: #5a78d4;
+
+  /* Accent Palette (Light Green) */
+  --accent-300: #E7F1A8;
+  --accent-400: #d5e67a;
+  --accent-500: #c0d654;
 
   /* Glass Surface Tokens */
-  --glass-bg: rgba(255, 255, 255, 0.18);
+  --glass-bg: rgba(255, 253, 245, 0.45);
   --glass-border: rgba(255, 255, 255, 0.25);
   --glass-blur: 16px;
-  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
 
-  /* Semantic Colors */
-  --success: #2ECC71;
-  --warning: #F1C40F;
-  --error: #E74C3C;
-  --info: #3498DB;
+  /* Semantic Colors (kept for compatibility) */
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --info: #95B1EE;
 
   /* Spacing Tokens */
   --space-4: 4px;
@@ -78,7 +119,7 @@ body {
 
 /* Base Component Styles */
 .ui-button-primary {
-  background-color: var(--primary-500);
+  background-color: var(--primary-600);
   color: white;
   border-radius: 12px;
   font-weight: 700;
@@ -95,7 +136,7 @@ body {
 }
 
 .ui-button-primary:hover {
-  background-color: var(--primary-600);
+  background-color: var(--primary-700);
   transform: translateY(-1px);
   box-shadow: 0 6px 20px var(--primary-glow);
 }
@@ -124,6 +165,102 @@ body {
 
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 24px;
+  }
+}
+
+/* Safe area for iOS */
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Hide scrollbar but allow scroll */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Mobile touch-friendly */
+@media (max-width: 767px) {
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Animations */
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out forwards;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
+}
+
+@keyframes pop-in {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-pop-in {
+  animation: pop-in 0.2s ease-out;
+}
+
+/* Mobile Modal - Full Screen */
+@media (max-width: 767px) {
+  .mobile-modal-fullscreen {
+    position: fixed !important;
+    inset: 0 !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+  }
+
+  .mobile-modal-content {
+    max-height: calc(100vh - 60px);
+    overflow-y: auto;
+  }
 }

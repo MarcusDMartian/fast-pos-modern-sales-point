@@ -129,10 +129,10 @@ const Enterprise: React.FC = () => {
                 onChange={(e) => setTempConfig({ ...tempConfig, currency: e.target.value })}
                 className="w-full bg-slate-900/5 px-14 py-6 rounded-[2rem] font-bold text-slate-700 outline-none appearance-none cursor-pointer border-2 border-transparent focus:border-primary focus:bg-white transition-all shadow-sm"
               >
-                <option>USD ($)</option>
-                <option>VND (₫)</option>
-                <option>EUR (€)</option>
-                <option>GBP (£)</option>
+                <option value="VND (₫)">VND (₫) - Default</option>
+                <option value="USD ($)" disabled>USD ($) (Inactive)</option>
+                <option value="EUR (€)" disabled>EUR (€) (Inactive)</option>
+                <option value="GBP (£)" disabled>GBP (£) (Inactive)</option>
               </select>
             </div>
           </div>

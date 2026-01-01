@@ -1,17 +1,19 @@
-
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useStore } from '../store';
-import { Product, StockMovement, ProductType, BOMItem } from '../types';
-import { Package, ArrowUpRight, ArrowDownLeft, AlertCircle, History, Plus, Search, RefreshCcw, Check, FileText, FlaskConical, Zap, Boxes, ArrowRight, Hash, Info, ChevronRight, X, Clock, User, Tag, Calendar, LayoutList, Download, Upload, Printer, Eye, Edit3, Lock, Unlock, Ruler } from 'lucide-react';
+import { Product, StockMovement, ProductType } from '../types';
+import { Package, AlertCircle, History, Plus, Search, RefreshCcw, Check, FileText, FlaskConical, Zap, Boxes, ArrowRight, Hash, Info, ChevronRight, X, Clock, User, Tag, Calendar, LayoutList, Download, Upload, Printer, Eye, Edit3, Lock, Unlock, Ruler } from 'lucide-react';
+import { formatCurrency } from '../utils/formatters';
 import InventoryAdjustmentModal from '../components/InventoryAdjustmentModal';
 import AdvancedProductModal from '../components/AdvancedProductModal';
 import ImportModal from '../components/ImportModal';
 
 const Inventory: React.FC = () => {
+  const { t } = useTranslation();
   const {
     products, movements, addMovement,
     updateProduct, addProduct, setProducts,
-    uoms, printGroups, currentUser
+    uoms, printGroups, currentUser, enterpriseConfig
   } = useStore();
 
   const [activeTab, setActiveTab] = useState<'overview' | 'history'>('overview');
@@ -124,6 +126,15 @@ const Inventory: React.FC = () => {
     setShowImportModal(false);
   };
 
+  const getTypeLabel = (type: ProductType) => {
+    switch (type) {
+      case 'retail': return t('inventory.type_raw');
+      case 'service': return t('inventory.type_service');
+      case 'fnb': return t('inventory.type_finished');
+      default: return type;
+    }
+  };
+
   const getTypeStyle = (type: ProductType) => {
     switch (type) {
       case 'retail': return 'bg-emerald-50 text-emerald-600 border-emerald-100';
@@ -144,218 +155,269 @@ const Inventory: React.FC = () => {
   };
 
   return (
-    <div className="p-8">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+    <div className="p-3 md:p-8 max-w-7xl mx-auto space-y-6 md:space-y-10">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-extrabold text-slate-900 mb-2 tracking-tight">Inventory Control</h1>
-          <p className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.2em]">Monitoring {products.length} advanced SKU classifications</p>
+          <h1 className="text-xl md:text-3xl font-black text-slate-800 flex items-center gap-3">
+            <Boxes size={28} className="text-primary" />
+            {t('inventory.title')}
+          </h1>
+          <p className="hidden md:block text-slate-400 font-bold text-[10px] uppercase tracking-[0.2em] mt-2">
+            Monitoring {products.length} SKU classifications
+          </p>
         </div>
-        <div className="flex items-center gap-3">
-          <button onClick={handleExportCSV} className="p-4 bg-white/40 backdrop-blur-xl text-slate-600 rounded-2xl border border-white/60 hover:bg-white transition-all flex items-center gap-2 font-bold text-[11px] uppercase tracking-wider shadow-sm"><Download size={18} /> Export</button>
-          <button onClick={() => setShowImportModal(true)} className="p-4 bg-white/40 backdrop-blur-xl text-slate-600 rounded-2xl border border-white/60 hover:bg-white transition-all flex items-center gap-2 font-bold text-[11px] uppercase tracking-wider shadow-sm"><Upload size={18} /> Import</button>
-          <button onClick={() => setShowAdvancedModal(true)} className="bg-white/40 backdrop-blur-xl text-slate-600 px-8 py-4 rounded-2xl font-bold flex items-center gap-3 border border-white/60 shadow-lg hover:bg-white transition-all text-[11px] uppercase tracking-wider"><Boxes size={20} /> Create Advanced</button>
-          <button onClick={() => setShowAdjustmentModal(true)} className="bg-primary text-white px-8 py-4 rounded-2xl font-bold flex items-center gap-3 shadow-xl shadow-primary-glow hover:bg-slate-900 transition-all text-[11px] uppercase tracking-wider scale-105 active:scale-95"><RefreshCcw size={20} /> Adjust Stock</button>
+        <div className="flex items-center gap-2">
+          <button onClick={handleExportCSV} className="p-3 bg-white border border-slate-100 text-slate-400 rounded-xl hover:bg-slate-50 transition-all shadow-sm">
+            <Download size={20} />
+          </button>
+          <button onClick={() => setShowImportModal(true)} className="p-3 bg-white border border-slate-100 text-slate-400 rounded-xl hover:bg-slate-50 transition-all shadow-sm">
+            <Upload size={20} />
+          </button>
+          <button
+            onClick={() => setShowAdjustmentModal(true)}
+            className="px-6 py-3 bg-primary text-white font-bold rounded-xl flex items-center gap-2 shadow-lg hover:brightness-110 transition-all whitespace-nowrap"
+          >
+            <RefreshCcw size={18} />
+            <span className="hidden sm:inline">{t('inventory.adjustment')}</span>
+          </button>
+          <button
+            onClick={() => setShowAdvancedModal(true)}
+            className="px-6 py-3 bg-slate-900 text-white font-bold rounded-xl flex items-center gap-2 shadow-lg hover:brightness-110 transition-all whitespace-nowrap"
+          >
+            <Plus size={18} />
+            <span className="hidden sm:inline">{t('inventory.add_product')}</span>
+          </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+      {/* Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Retail Items', val: products.filter(p => p.type === 'retail').length, icon: Package, color: 'text-emerald-500', bg: 'bg-emerald-50' },
-          { label: 'F&B Items', val: products.filter(p => p.type === 'fnb').length, icon: FlaskConical, color: 'text-orange-500', bg: 'bg-orange-50' },
-          { label: 'Service Items', val: products.filter(p => p.type === 'service').length, icon: Zap, color: 'text-blue-500', bg: 'bg-blue-50' },
-          { label: 'Low Stock', val: lowStockCount, icon: AlertCircle, color: 'text-red-500', bg: 'bg-red-50' },
+          { label: t('inventory.type_raw'), val: products.filter(p => p.type === 'retail').length, icon: Package, color: 'text-emerald-500', bg: 'bg-emerald-50' },
+          { label: t('inventory.type_finished'), val: products.filter(p => p.type === 'fnb').length, icon: FlaskConical, color: 'text-orange-500', bg: 'bg-orange-50' },
+          { label: t('inventory.type_service'), val: products.filter(p => p.type === 'service').length, icon: Zap, color: 'text-blue-500', bg: 'bg-blue-50' },
+          { label: t('inventory.status_low_stock'), val: lowStockCount, icon: AlertCircle, color: 'text-red-500', bg: 'bg-red-50' },
         ].map((stat, i) => (
-          <div key={i} className="glass-card p-8 rounded-[2rem] flex items-center gap-6 hover:scale-105 transition-transform cursor-default">
-            <div className={`p-5 rounded-2xl ${stat.bg} ${stat.color} shadow-inner`}><stat.icon size={28} /></div>
+          <div key={i} className="glass-card p-4 md:p-6 flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <div className={`p-3 rounded-xl ${stat.bg} ${stat.color}`}>
+                <stat.icon size={20} />
+              </div>
+            </div>
             <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{stat.label}</p>
-              <h3 className={`text-3xl font-extrabold text-slate-800 tracking-tight`}>{stat.val}</h3>
+              <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mb-1">{stat.label}</p>
+              <h3 className="text-xl md:text-2xl font-black text-slate-800">{stat.val}</h3>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-8">
-        <div className="flex items-center gap-2 p-1.5 bg-white/40 backdrop-blur-xl rounded-2xl border border-white/60 shadow-lg">
-          {(['all', 'retail', 'service', 'fnb'] as const).map(f => (
-            <button key={f} onClick={() => { setTypeFilter(f); setActiveTab('overview'); }} className={`px-8 py-2.5 rounded-xl font-bold text-[11px] uppercase tracking-wider transition-all ${typeFilter === f && activeTab === 'overview' ? 'bg-primary text-white shadow-xl shadow-primary-glow' : 'text-slate-400 hover:text-slate-600 hover:bg-white/40'}`}>{f}</button>
-          ))}
-          <div className="w-px h-6 bg-slate-200 mx-2"></div>
-          <button onClick={() => setActiveTab('history')} className={`px-8 py-2.5 rounded-xl font-bold text-[11px] uppercase tracking-wider transition-all flex items-center gap-2 ${activeTab === 'history' ? 'bg-slate-900 text-white shadow-xl' : 'text-slate-400 hover:text-slate-600 hover:bg-white/40'}`}><History size={16} /> History</button>
+      {/* Tabs & Search */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+          <button
+            onClick={() => setActiveTab('overview')}
+            className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${activeTab === 'overview'
+                ? 'bg-slate-900 text-white shadow-lg'
+                : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-100'
+              }`}
+          >
+            {t('pos.all')}
+          </button>
+          <button
+            onClick={() => setActiveTab('history')}
+            className={`px-6 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-all ${activeTab === 'history'
+                ? 'bg-slate-900 text-white shadow-lg'
+                : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-100'
+              }`}
+          >
+            <History size={16} />
+            {t('inventory.movement_history')}
+          </button>
         </div>
+
         {activeTab === 'overview' && (
-          <div className="relative w-full lg:w-[400px]">
-            <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={20} />
-            <input type="text" placeholder="Lookup SKU or Name..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full bg-white/50 backdrop-blur-xl pl-16 pr-6 py-4 rounded-2xl font-bold text-slate-900 outline-none border border-white/80 focus:border-primary focus:bg-white transition-all shadow-lg shadow-black/5" />
+          <div className="relative flex-1 md:max-w-[400px]">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
+            <input
+              type="text"
+              placeholder={t('pos.search_placeholder')}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 bg-white border border-slate-100 rounded-xl font-bold text-sm outline-none focus:border-primary shadow-sm"
+            />
           </div>
         )}
       </div>
 
-      {activeTab === 'overview' ? (
-        <div className="glass-card shadow-xl overflow-hidden relative animate-in fade-in duration-500">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left table-fixed min-w-[1200px] border-collapse">
-              <thead>
-                <tr className="bg-slate-900/5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100">
-                  <th className="p-10 pl-12 w-[300px]">Product Info</th>
-                  <th className="p-10 w-[200px]">UOM Strategy</th>
-                  <th className="p-10 w-[150px]">Stock Status</th>
-                  <th className="p-10">Tags & Routing</th>
-                  <th className="p-10 w-[220px] text-right pr-12 sticky right-0 bg-white shadow-[-10px_0_15px_-3px_rgba(0,0,0,0.05)] border-l border-slate-50">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50">
-                {filteredProducts.map(prod => {
-                  const baseUOM = uoms.find(u => u.id === prod.baseUOMId);
-                  const salesUnit = prod.units.find(u => u.isDefault) || prod.units[0];
-                  const salesUOM = uoms.find(u => u.id === salesUnit?.uomId);
-                  const printGroup = printGroups.find(pg => pg.id === prod.printGroupId);
-                  const isLocked = prod.status === 'locked';
-
-                  return (
-                    <tr key={prod.id} className={`hover:bg-white/40 transition-colors group ${isLocked ? 'opacity-40 grayscale blur-[1px]' : ''}`}>
-                      <td className="p-10 pl-12">
-                        <div className="flex items-center gap-6">
-                          <div className="relative shrink-0">
-                            <img src={prod.image} className="w-16 h-16 rounded-[1.25rem] object-cover shadow-lg border-2 border-white" />
-                            <div className={`absolute -top-2 -right-2 px-2.5 py-1 rounded-lg text-[8px] font-extrabold uppercase border-2 border-white shadow-sm ${getTypeStyle(prod.type)}`}>{prod.type}</div>
+      {/* Content */}
+      <div className="animate-in fade-in duration-500">
+        {activeTab === 'overview' ? (
+          <div className="glass-card overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-100">
+                    <th className="text-left p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">{t('inventory.product_name')}</th>
+                    <th className="text-left p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">{t('inventory.category')}</th>
+                    <th className="text-right p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">{t('pos.price')}</th>
+                    <th className="text-right p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">{t('inventory.stock_actual')}</th>
+                    <th className="text-center p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">{t('staff.status')}</th>
+                    <th className="text-right p-6 text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50 text-sm">
+                  {filteredProducts.map(prod => {
+                    const isLocked = prod.status === 'locked';
+                    const baseUOM = uoms.find(u => u.id === prod.baseUOMId);
+                    return (
+                      <tr key={prod.id} className={`hover:bg-slate-50/50 transition-colors ${isLocked ? 'opacity-40 grayscale' : ''}`}>
+                        <td className="p-6">
+                          <div className="flex items-center gap-4">
+                            <img src={prod.image} className="w-12 h-12 rounded-xl object-cover border border-slate-100 shadow-sm" />
+                            <div>
+                              <p className="font-black text-slate-800">{prod.name}</p>
+                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{prod.id}</p>
+                            </div>
                           </div>
-                          <div className="min-w-0">
-                            <p className="font-extrabold text-slate-800 text-[15px] leading-tight truncate">{prod.name}</p>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">{prod.id}</p>
+                        </td>
+                        <td className="p-6">
+                          <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${getTypeStyle(prod.type)}`}>
+                            {getTypeLabel(prod.type)}
+                          </span>
+                        </td>
+                        <td className="p-6 text-right font-black text-slate-900 border-none">
+                          {formatCurrency(prod.price, enterpriseConfig.currency)}
+                        </td>
+                        <td className="p-6 text-right font-black">
+                          <span className={`${prod.stock < 10 && prod.type !== 'service' ? 'text-red-500' : 'text-slate-800'} text-lg`}>
+                            {prod.type === 'service' ? '∞' : prod.stock}
+                          </span>
+                          <span className="text-xs text-slate-400 ml-1.5 font-bold uppercase tracking-widest">{baseUOM?.code}</span>
+                        </td>
+                        <td className="p-6 text-center">
+                          <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${prod.stock > 0 ? 'bg-emerald-50 text-emerald-500' : 'bg-red-50 text-red-500'}`}>
+                            {prod.stock > 0 ? t('inventory.status_in_stock') : t('inventory.status_out_of_stock')}
+                          </span>
+                        </td>
+                        <td className="p-6 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <button onClick={() => setViewingProduct(prod)} className="p-2 text-slate-300 hover:text-primary transition-colors"><Eye size={18} /></button>
+                            <button onClick={() => setEditingProduct(prod)} className="p-2 text-slate-300 hover:text-primary transition-colors"><Edit3 size={18} /></button>
+                            <button onClick={() => toggleProductLock(prod.id)} className={`p-2 transition-colors ${isLocked ? 'text-red-400' : 'text-slate-300 hover:text-slate-600'}`}>
+                              {isLocked ? <Lock size={18} /> : <Unlock size={18} />}
+                            </button>
                           </div>
-                        </div>
-                      </td>
-                      <td className="p-10">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-black text-[#333984]">{salesUOM?.code}</span>
-                          <ArrowRight size={14} className="text-gray-300" />
-                          <span className="text-xs font-bold text-gray-400">{baseUOM?.code}</span>
-                        </div>
-                        <p className="text-[10px] font-bold text-blue-400 uppercase mt-1">1 {salesUOM?.code} = {salesUnit?.conversionFactor} {baseUOM?.code}</p>
-                      </td>
-                      <td className="p-10">
-                        <div className="flex flex-col">
-                          <span className={`text-2xl font-black ${prod.stock < 10 && prod.type !== 'service' ? 'text-orange-500' : 'text-[#333984]'}`}>{prod.type === 'service' ? '∞' : prod.stock}</span>
-                          <span className="text-[10px] font-black text-gray-300 uppercase tracking-widest">{baseUOM?.name}</span>
-                        </div>
-                      </td>
-                      <td className="p-10">
-                        <div className="flex flex-wrap gap-2">
-                          {printGroup && <div className="px-3 py-1.5 bg-gray-50 border border-gray-100 rounded-xl flex items-center gap-2 text-[#333984] shadow-sm"><Printer size={14} /><span className="text-[10px] font-black uppercase">{printGroup.name}</span></div>}
-                          {prod.bom && <div className="px-3 py-1.5 bg-purple-50 text-purple-600 rounded-xl flex items-center gap-2 text-[10px] font-black uppercase border border-purple-100"><FlaskConical size={14} /> Recipe</div>}
-                          {prod.hasLotTracking && <div className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-xl flex items-center gap-2 text-[10px] font-black uppercase border border-blue-100"><Hash size={14} /> Lot Control</div>}
-                        </div>
-                      </td>
-                      <td className="p-10 text-right pr-12 sticky right-0 bg-white/95 backdrop-blur-md shadow-[-10px_0_15px_-3px_rgba(0,0,0,0.05)] border-l border-slate-50">
-                        <div className="flex items-center justify-end gap-2.5">
-                          <button onClick={() => setViewingProduct(prod)} className="p-3 bg-slate-50 text-primary rounded-xl hover:bg-primary hover:text-white transition-all shadow-sm border border-slate-100" title="Details"><Eye size={18} /></button>
-                          <button onClick={() => setEditingProduct(prod)} className="p-3 bg-slate-50 text-slate-600 rounded-xl hover:bg-slate-900 hover:text-white transition-all shadow-sm border border-slate-100" title="Edit"><Edit3 size={18} /></button>
-                          <button onClick={() => toggleProductLock(prod.id)} className={`p-3 rounded-xl transition-all shadow-sm border ${isLocked ? 'bg-red-50 text-red-500 border-red-100 hover:bg-red-500 hover:text-white' : 'bg-slate-50 text-slate-300 border-slate-100 hover:bg-slate-900 hover:text-white'}`} title={isLocked ? 'Unlock' : 'Lock'}>{isLocked ? <Lock size={18} /> : <Unlock size={18} />}</button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
-      ) : (
-        <div className="bg-white rounded-[3.5rem] shadow-sm border border-gray-50 overflow-hidden animate-in fade-in duration-500">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left min-w-[1000px]">
-              <thead>
-                <tr className="bg-[#F4F6FF]/30 text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                  <th className="p-8">Date & Time</th>
-                  <th className="p-8">Product</th>
-                  <th className="p-8">Movement</th>
-                  <th className="p-8">Qty Change</th>
-                  <th className="p-8">Staff</th>
-                  <th className="p-8">Note</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {movements.map(mov => {
-                  const uom = uoms.find(u => u.id === mov.uomId);
-                  return (
-                    <tr key={mov.id} className="hover:bg-gray-50/50 transition-colors">
-                      <td className="p-8"><div className="flex items-center gap-3"><Clock size={14} className="text-gray-400" /><div className="text-xs"><p className="font-black text-[#333984]">{new Date(mov.date).toLocaleDateString()}</p><p className="text-gray-400">{new Date(mov.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p></div></div></td>
-                      <td className="p-8"><p className="font-black text-[#333984] text-sm">{mov.productName}</p><p className="text-[10px] font-bold text-gray-400 uppercase">SKU: {mov.productId}</p></td>
-                      <td className="p-8"><span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${getMovementTypeStyle(mov.type)}`}>{mov.type}</span></td>
-                      <td className="p-8"><div className="flex items-center gap-1"><span className={`font-black text-lg ${mov.type === 'in' || mov.type === 'return' ? 'text-green-500' : 'text-red-500'}`}>{mov.type === 'in' || mov.type === 'return' ? '+' : '-'}{mov.quantity}</span><span className="text-[10px] font-bold text-gray-400 uppercase">{uom?.code}</span></div></td>
-                      <td className="p-8"><div className="flex items-center gap-2"><User size={14} className="text-gray-300" /><span className="text-xs font-bold text-gray-600">{mov.performedBy}</span></div></td>
-                      <td className="p-8"><p className="text-xs text-gray-400 font-medium italic truncate max-w-[150px]">{mov.note}</p></td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+        ) : (
+          <div className="glass-card overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-100">
+                    <th className="p-6 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Time</th>
+                    <th className="p-6 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Product</th>
+                    <th className="p-6 text-center text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Type</th>
+                    <th className="p-6 text-right text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Qty Change</th>
+                    <th className="p-6 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Staff</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {movements.map(mov => {
+                    const uom = uoms.find(u => u.id === mov.uomId);
+                    return (
+                      <tr key={mov.id} className="hover:bg-slate-50/50 transition-colors">
+                        <td className="p-6">
+                          <div className="flex items-center gap-2 text-slate-400">
+                            <Clock size={14} />
+                            <span className="font-bold">{new Date(mov.date).toLocaleString('vi-VN')}</span>
+                          </div>
+                        </td>
+                        <td className="p-6">
+                          <p className="font-black text-slate-800">{mov.productName}</p>
+                          <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">{mov.productId}</p>
+                        </td>
+                        <td className="p-6 text-center">
+                          <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${getMovementTypeStyle(mov.type)}`}>
+                            {mov.type}
+                          </span>
+                        </td>
+                        <td className="p-6 text-right">
+                          <span className={`font-black text-lg ${mov.type === 'in' || mov.type === 'return' ? 'text-emerald-500' : 'text-red-500'}`}>
+                            {mov.type === 'in' || mov.type === 'return' ? '+' : '-'}{mov.quantity}
+                          </span>
+                          <span className="text-xs text-slate-300 font-bold uppercase ml-1.5">{uom?.code}</span>
+                        </td>
+                        <td className="p-6">
+                          <div className="flex items-center gap-2 text-slate-500 font-bold">
+                            <User size={14} />
+                            {mov.performedBy}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
+      {/* Product Detail Sidebar */}
       {viewingProduct && (
-        <div className="fixed inset-0 z-[400] flex justify-end bg-[#333984]/30 backdrop-blur-md animate-in fade-in duration-300">
-          <div className="w-full max-w-xl bg-white h-full shadow-2xl p-12 flex flex-col animate-in slide-in-from-right duration-500 rounded-l-[4rem]">
+        <div className="fixed inset-0 z-[400] flex justify-end bg-slate-900/40 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="w-full max-w-xl bg-white h-full shadow-2xl p-8 md:p-12 flex flex-col animate-in slide-in-from-right duration-500 rounded-l-[3rem]">
             <div className="flex justify-between items-center mb-10">
-              <div>
-                <h2 className="text-3xl font-black text-[#333984]">Product Insight</h2>
-                <p className="text-gray-400 font-bold text-xs uppercase tracking-widest mt-1">{viewingProduct.id}</p>
-              </div>
-              <button onClick={() => setViewingProduct(null)} className="p-3 bg-gray-50 rounded-full hover:bg-gray-100 transition-all"><X /></button>
+              <h2 className="text-2xl font-black text-slate-800">{t('orders.details')}</h2>
+              <button onClick={() => setViewingProduct(null)} className="p-3 bg-slate-50 rounded-full hover:bg-slate-100 transition-all text-slate-400"><X /></button>
             </div>
 
-            <div className="flex-1 overflow-y-auto custom-scrollbar space-y-10 pr-4">
-              <div className="flex gap-8">
-                <img src={viewingProduct.image} className="w-40 h-40 rounded-[2.5rem] object-cover shadow-xl border-4 border-white" />
-                <div className="flex-1 flex flex-col justify-center">
-                  <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest w-fit mb-3 ${getTypeStyle(viewingProduct.type)}`}>{viewingProduct.type}</span>
-                  <h3 className="text-2xl font-black text-[#333984] mb-1">{viewingProduct.name}</h3>
-                  <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">{viewingProduct.category}</p>
+            <div className="flex-1 overflow-y-auto no-scrollbar space-y-10">
+              <div className="flex items-center gap-8">
+                <img src={viewingProduct.image} className="w-32 h-32 rounded-[2.5rem] object-cover shadow-xl border-4 border-white" />
+                <div>
+                  <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${getTypeStyle(viewingProduct.type)}`}>{getTypeLabel(viewingProduct.type)}</span>
+                  <h3 className="text-2xl font-black text-slate-800 mt-2">{viewingProduct.name}</h3>
+                  <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">{viewingProduct.category}</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-[#F4F6FF] p-6 rounded-[2rem] border border-blue-50">
-                  <p className="text-[10px] font-black text-gray-400 uppercase mb-1">Base Stock</p>
-                  <p className="text-3xl font-black text-[#333984]">{viewingProduct.stock} <span className="text-xs text-blue-300 font-bold">{uoms.find(u => u.id === viewingProduct.baseUOMId)?.code}</span></p>
+                <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{t('inventory.stock_actual')}</p>
+                  <p className="text-3xl font-black text-slate-800">{viewingProduct.stock} <span className="text-xs text-slate-400 font-bold">{uoms.find(u => u.id === viewingProduct.baseUOMId)?.code}</span></p>
                 </div>
-                <div className="bg-[#F4F6FF] p-6 rounded-[2rem] border border-blue-50">
-                  <p className="text-[10px] font-black text-gray-400 uppercase mb-1">Default Price</p>
-                  <p className="text-3xl font-black text-[#2A46FF]">${viewingProduct.price.toFixed(2)}</p>
+                <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{t('pos.price')}</p>
+                  <p className="text-3xl font-black text-primary">{formatCurrency(viewingProduct.price, enterpriseConfig.currency)}</p>
                 </div>
               </div>
 
               {viewingProduct.bom && (
                 <div className="space-y-4">
-                  <div className="flex items-center gap-2 px-2"><FlaskConical size={16} className="text-purple-500" /><h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Recipe BOM Components</h4></div>
+                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">Recipe Components</h4>
                   {viewingProduct.bom.items.map((item, idx) => (
-                    <div key={idx} className="flex justify-between items-center p-5 bg-white border border-gray-100 rounded-2xl">
-                      <span className="text-sm font-bold text-[#333984]">{item.componentId}</span>
-                      <span className="text-sm font-black text-[#2A46FF]">{item.quantity} {uoms.find(u => u.id === item.uomId)?.code}</span>
+                    <div key={idx} className="flex justify-between items-center p-5 bg-white border border-slate-100 rounded-2xl">
+                      <span className="font-bold text-slate-600">{item.componentId}</span>
+                      <span className="font-black text-slate-800">{item.quantity} {uoms.find(u => u.id === item.uomId)?.code}</span>
                     </div>
                   ))}
                 </div>
               )}
-
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 px-2"><Ruler size={16} className="text-blue-500" /><h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Available Sales Units</h4></div>
-                {viewingProduct.units.map((unit, idx) => (
-                  <div key={idx} className="flex justify-between items-center p-5 bg-white border border-gray-100 rounded-2xl">
-                    <span className="text-sm font-bold text-[#333984]">{uoms.find(u => u.id === unit.uomId)?.name}</span>
-                    <div className="text-right">
-                      <p className="text-sm font-black text-[#2A46FF]">${unit.price.toFixed(2)}</p>
-                      <p className="text-[10px] font-bold text-gray-400">Ratio: {unit.conversionFactor}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
             </div>
 
-            <div className="pt-8 mt-auto border-t border-gray-50 grid grid-cols-2 gap-4">
-              <button onClick={() => { setViewingProduct(null); setEditingProduct(viewingProduct); }} className="py-6 bg-[#333984] text-white font-black rounded-[2rem] hover:bg-[#2A46FF] transition-all flex items-center justify-center gap-3 shadow-xl"><Edit3 size={18} /> Quick Edit</button>
-              <button onClick={() => setViewingProduct(null)} className="py-6 bg-gray-50 text-[#333984] font-black rounded-[2rem] hover:bg-gray-100 transition-all">Close Info</button>
+            <div className="pt-8 mt-auto border-t border-slate-50 grid grid-cols-2 gap-4">
+              <button onClick={() => { setViewingProduct(null); setEditingProduct(viewingProduct); }} className="py-4 bg-primary text-white font-black rounded-2xl hover:brightness-110 transition-all flex items-center justify-center gap-2"><Edit3 size={18} /> Edit</button>
+              <button onClick={() => setViewingProduct(null)} className="py-4 bg-slate-50 text-slate-400 font-black rounded-2xl hover:bg-slate-100 transition-all">Close</button>
             </div>
           </div>
         </div>

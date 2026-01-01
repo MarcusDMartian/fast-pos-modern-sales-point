@@ -54,12 +54,12 @@ const InventoryAdjustmentModal: React.FC<InventoryAdjustmentModalProps> = ({ pro
   };
 
   return (
-    <div className="fixed inset-0 z-[150] flex items-center justify-center bg-[#333984]/30 backdrop-blur-md p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[150] flex items-center justify-center bg-[var(--primary-700)]/30 backdrop-blur-md p-4 animate-in fade-in duration-200">
       <div className="bg-white w-full max-w-2xl rounded-[3.5rem] shadow-2xl overflow-hidden animate-in zoom-in duration-300 flex flex-col max-h-[90vh]">
         {/* Header */}
         <div className="p-10 border-b border-gray-50 flex justify-between items-center bg-white sticky top-0 z-10">
           <div>
-            <h2 className="text-2xl font-black text-[#333984]">Stock Adjustment</h2>
+            <h2 className="text-2xl font-black text-[var(--primary-700)]">Stock Adjustment</h2>
             <p className="text-gray-400 font-bold text-xs uppercase tracking-widest mt-1">Record manual inventory impact</p>
           </div>
           <button onClick={onClose} className="p-3 bg-gray-100 text-gray-500 hover:bg-gray-200 rounded-full transition-all">
@@ -79,7 +79,7 @@ const InventoryAdjustmentModal: React.FC<InventoryAdjustmentModalProps> = ({ pro
                   placeholder="Product name or scan barcode..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full bg-gray-50 pl-16 pr-6 py-6 rounded-[2rem] text-lg font-bold text-[#333984] outline-none border-2 border-transparent focus:border-[#2A46FF] transition-all"
+                  className="w-full bg-gray-50 pl-16 pr-6 py-6 rounded-[2rem] text-lg font-bold text-[var(--primary-700)] outline-none border-2 border-transparent focus:border-[var(--primary-600)] transition-all"
                 />
               </div>
               <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
@@ -87,17 +87,17 @@ const InventoryAdjustmentModal: React.FC<InventoryAdjustmentModalProps> = ({ pro
                   <button
                     key={p.id}
                     onClick={() => handleProductSelect(p)}
-                    className="w-full flex items-center justify-between p-6 bg-white border border-gray-100 rounded-[2.5rem] hover:border-[#2A46FF] hover:bg-blue-50/20 transition-all group"
+                    className="w-full flex items-center justify-between p-6 bg-white border border-gray-100 rounded-[2.5rem] hover:border-[var(--primary-600)] hover:bg-blue-50/20 transition-all group"
                   >
                     <div className="flex items-center gap-4">
                       <img src={p.image} className="w-14 h-14 rounded-2xl object-cover shadow-sm" />
                       <div className="text-left">
-                        <p className="font-black text-[#333984] text-lg leading-tight">{p.name}</p>
+                        <p className="font-black text-[var(--primary-700)] text-lg leading-tight">{p.name}</p>
                         <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest mt-1">SKU: {p.barcode || p.id}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-xl font-black text-[#333984]">{p.stock}</p>
+                      <p className="text-xl font-black text-[var(--primary-700)]">{p.stock}</p>
                       <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest">Base Stock</p>
                     </div>
                   </button>
@@ -120,19 +120,19 @@ const InventoryAdjustmentModal: React.FC<InventoryAdjustmentModalProps> = ({ pro
                 <div className="flex items-center gap-6">
                   <div className="relative">
                     <img src={selectedProduct.image} className="w-20 h-20 rounded-[1.8rem] object-cover shadow-lg" />
-                    <div className="absolute -bottom-2 -right-2 p-2 bg-white rounded-xl shadow-sm"><Info size={12} className="text-[#2A46FF]"/></div>
+                    <div className="absolute -bottom-2 -right-2 p-2 bg-white rounded-xl shadow-sm"><Info size={12} className="text-[var(--primary-600)]"/></div>
                   </div>
                   <div>
-                    <h3 className="text-2xl font-black text-[#333984] tracking-tight">{selectedProduct.name}</h3>
+                    <h3 className="text-2xl font-black text-[var(--primary-700)] tracking-tight">{selectedProduct.name}</h3>
                     <div className="flex items-center gap-3 mt-1">
-                      <span className="text-xs font-black text-[#2A46FF] bg-white px-3 py-1 rounded-lg shadow-sm">Current Stock: {selectedProduct.stock}</span>
+                      <span className="text-xs font-black text-[var(--primary-600)] bg-white px-3 py-1 rounded-lg shadow-sm">Current Stock: {selectedProduct.stock}</span>
                       <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{MOCK_UOMS.find(u => u.id === selectedProduct.baseUOMId)?.code}</span>
                     </div>
                   </div>
                 </div>
                 <button 
                   onClick={() => setSelectedProduct(null)}
-                  className="p-4 bg-white text-gray-400 rounded-2xl hover:bg-[#333984] hover:text-white transition-all shadow-sm"
+                  className="p-4 bg-white text-gray-400 rounded-2xl hover:bg-[var(--primary-700)] hover:text-white transition-all shadow-sm"
                 >
                   <RefreshCcw size={20} />
                 </button>
@@ -149,10 +149,10 @@ const InventoryAdjustmentModal: React.FC<InventoryAdjustmentModalProps> = ({ pro
                       key={m}
                       onClick={() => setType(m)}
                       className={`p-6 rounded-[2rem] border-2 flex flex-col items-center gap-3 transition-all relative ${
-                        isActive ? 'border-[#2A46FF] bg-blue-50/20 text-[#2A46FF]' : 'border-gray-50 text-gray-400 hover:border-gray-200 hover:bg-gray-50'
+                        isActive ? 'border-[var(--primary-600)] bg-blue-50/20 text-[var(--primary-600)]' : 'border-gray-50 text-gray-400 hover:border-gray-200 hover:bg-gray-50'
                       }`}
                     >
-                      <div className={`p-4 rounded-2xl transition-all ${isActive ? 'bg-[#2A46FF] text-white shadow-lg' : config.bg + ' ' + config.color}`}>
+                      <div className={`p-4 rounded-2xl transition-all ${isActive ? 'bg-[var(--primary-600)] text-white shadow-lg' : config.bg + ' ' + config.color}`}>
                         <Icon size={24} strokeWidth={3} />
                       </div>
                       <span className="text-[10px] font-black uppercase tracking-widest text-center">{config.label}</span>
@@ -166,24 +166,24 @@ const InventoryAdjustmentModal: React.FC<InventoryAdjustmentModalProps> = ({ pro
                 <div className="space-y-4">
                   <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-2">Adjustment Quantity</label>
                   <div className="relative">
-                    <Hash className="absolute left-6 top-1/2 -translate-y-1/2 text-[#2A46FF]" size={24} />
+                    <Hash className="absolute left-6 top-1/2 -translate-y-1/2 text-[var(--primary-600)]" size={24} />
                     <input
                       type="number"
                       placeholder="0.00"
                       value={quantity}
                       onChange={(e) => setQuantity(e.target.value)}
-                      className="w-full bg-gray-50 pl-16 pr-6 py-6 rounded-[2rem] text-3xl font-black text-[#333984] outline-none border-2 border-transparent focus:border-[#2A46FF] transition-all"
+                      className="w-full bg-gray-50 pl-16 pr-6 py-6 rounded-[2rem] text-3xl font-black text-[var(--primary-700)] outline-none border-2 border-transparent focus:border-[var(--primary-600)] transition-all"
                     />
                   </div>
                 </div>
                 <div className="space-y-4">
                   <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-2">Unit of Measure (UOM)</label>
                   <div className="relative">
-                    <Ruler className="absolute left-6 top-1/2 -translate-y-1/2 text-[#2A46FF]" size={24} />
+                    <Ruler className="absolute left-6 top-1/2 -translate-y-1/2 text-[var(--primary-600)]" size={24} />
                     <select 
                       value={selectedUomId}
                       onChange={(e) => setSelectedUomId(e.target.value)}
-                      className="w-full bg-gray-50 pl-16 pr-6 py-6 rounded-[2rem] text-xl font-black text-[#333984] outline-none border-2 border-transparent focus:border-[#2A46FF] transition-all appearance-none"
+                      className="w-full bg-gray-50 pl-16 pr-6 py-6 rounded-[2rem] text-xl font-black text-[var(--primary-700)] outline-none border-2 border-transparent focus:border-[var(--primary-600)] transition-all appearance-none"
                     >
                       {selectedProduct.units.map(unit => {
                         const uom = MOCK_UOMS.find(u => u.id === unit.uomId);
@@ -203,13 +203,13 @@ const InventoryAdjustmentModal: React.FC<InventoryAdjustmentModalProps> = ({ pro
               <div className="space-y-4">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-2">Adjustment Note / Reason</label>
                 <div className="relative">
-                  <StickyNote className="absolute left-6 top-6 text-[#2A46FF]" size={24} />
+                  <StickyNote className="absolute left-6 top-6 text-[var(--primary-600)]" size={24} />
                   <textarea
                     rows={3}
                     placeholder="Provide a reason for this adjustment (e.g. Weekly inventory audit, Damaged during shipping...)"
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
-                    className="w-full bg-gray-50 pl-16 pr-6 py-6 rounded-[2.5rem] text-sm font-bold text-[#333984] outline-none border-2 border-transparent focus:border-[#2A46FF] transition-all resize-none"
+                    className="w-full bg-gray-50 pl-16 pr-6 py-6 rounded-[2.5rem] text-sm font-bold text-[var(--primary-700)] outline-none border-2 border-transparent focus:border-[var(--primary-600)] transition-all resize-none"
                   />
                 </div>
               </div>
@@ -219,11 +219,11 @@ const InventoryAdjustmentModal: React.FC<InventoryAdjustmentModalProps> = ({ pro
 
         {/* Footer */}
         <div className="p-10 bg-[#F4F6FF]/50 border-t border-gray-50 flex gap-4">
-          <button onClick={onClose} className="px-10 py-6 bg-white border border-gray-200 text-[#333984] font-black rounded-[2rem] hover:bg-gray-50 transition-all">Cancel</button>
+          <button onClick={onClose} className="px-10 py-6 bg-white border border-gray-200 text-[var(--primary-700)] font-black rounded-[2rem] hover:bg-gray-50 transition-all">Cancel</button>
           <button
             disabled={!selectedProduct || !quantity}
             onClick={handleConfirm}
-            className="flex-1 bg-[#2A46FF] text-white py-6 rounded-[2rem] font-black text-xl flex items-center justify-center gap-3 shadow-xl shadow-blue-100 hover:bg-[#333984] transition-all disabled:opacity-50"
+            className="flex-1 bg-[var(--primary-600)] text-white py-6 rounded-[2rem] font-black text-xl flex items-center justify-center gap-3 shadow-xl shadow-primary-200 hover:bg-[var(--primary-700)] transition-all disabled:opacity-50"
           >
             <Check size={24} strokeWidth={3} />
             Post Adjustment

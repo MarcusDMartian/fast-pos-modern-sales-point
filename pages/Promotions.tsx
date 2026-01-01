@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useStore } from '../store';
 import { PromotionRule } from '../types';
+import { formatCurrency } from '../utils/formatters';
 
 type PromoTab = 'campaigns' | 'vouchers' | 'groups' | 'analytics';
 
@@ -67,7 +68,7 @@ const MOCK_GROUPS: CustomerGroup[] = [
 ];
 
 const Promotions: React.FC = () => {
-  const { promotions, setPromotions, showToast } = useStore();
+  const { promotions, setPromotions, showToast, enterpriseConfig } = useStore();
   const [activeTab, setActiveTab] = useState<PromoTab>('campaigns');
   const [isSaving, setIsSaving] = useState(false);
   const [campaigns] = useState<Campaign[]>(MOCK_CAMPAIGNS);
@@ -198,7 +199,7 @@ const Promotions: React.FC = () => {
                 <div className="p-3 bg-slate-50 rounded-xl">
                   <p className="text-[10px] font-bold text-slate-400 uppercase">Giá trị</p>
                   <p className="font-black text-lg text-primary">
-                    {campaign.type === 'percentage' ? `${campaign.value}%` : campaign.type === 'bogo' ? 'BOGO' : `${campaign.value.toLocaleString()}₫`}
+                    {campaign.type === 'percentage' ? `${campaign.value}%` : campaign.type === 'bogo' ? 'BOGO' : formatCurrency(campaign.value, enterpriseConfig.currency)}
                   </p>
                 </div>
                 <div className="p-3 bg-slate-50 rounded-xl">
@@ -207,12 +208,12 @@ const Promotions: React.FC = () => {
                 </div>
                 <div className="p-3 bg-slate-50 rounded-xl">
                   <p className="text-[10px] font-bold text-slate-400 uppercase">Ngân sách</p>
-                  <p className="font-black text-lg text-slate-800">{(campaign.budget / 1000000).toFixed(1)}M</p>
+                  <p className="font-black text-lg text-slate-800">{formatCurrency(campaign.budget, enterpriseConfig.currency)}</p>
                 </div>
                 <div className="p-3 bg-slate-50 rounded-xl">
                   <p className="text-[10px] font-bold text-slate-400 uppercase">Đã chi</p>
                   <div className="flex items-center gap-2">
-                    <p className="font-black text-lg text-orange-500">{(campaign.spent / 1000000).toFixed(1)}M</p>
+                    <p className="font-black text-lg text-orange-500">{formatCurrency(campaign.spent, enterpriseConfig.currency)}</p>
                     <span className="text-xs text-slate-400">({Math.round((campaign.spent / campaign.budget) * 100)}%)</span>
                   </div>
                 </div>
@@ -234,66 +235,103 @@ const Promotions: React.FC = () => {
           </div>
 
           <div className="glass-card overflow-hidden">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-slate-50 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                  <th className="text-left p-4 pl-6">Mã</th>
-                  <th className="text-left p-4">Giảm giá</th>
-                  <th className="text-left p-4">Đơn tối thiểu</th>
-                  <th className="text-center p-4">Đã dùng / Tổng</th>
-                  <th className="text-left p-4">Hết hạn</th>
-                  <th className="text-center p-4">Trạng thái</th>
-                  <th className="text-right p-4 pr-6">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody>
-                {vouchers.map(voucher => (
-                  <tr key={voucher.id} className="border-t border-slate-50 hover:bg-white/50 transition-colors">
-                    <td className="p-4 pl-6">
-                      <div className="flex items-center gap-2">
-                        <code className="px-3 py-1.5 bg-slate-900 text-white font-mono font-bold rounded-lg text-sm">{voucher.code}</code>
-                        <button className="p-1 text-slate-300 hover:text-primary transition-all">
-                          <Copy size={14} />
-                        </button>
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <span className="font-black text-primary text-lg">
-                        {voucher.discountType === 'percentage' ? `${voucher.discount}%` : `${voucher.discount.toLocaleString()}₫`}
-                      </span>
-                    </td>
-                    <td className="p-4 font-bold text-slate-600">{voucher.minPurchase.toLocaleString()}₫</td>
-                    <td className="p-4 text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        <span className="font-bold text-slate-800">{voucher.usedCount}/{voucher.maxUses}</span>
-                        <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-primary rounded-full"
-                            style={{ width: `${(voucher.usedCount / voucher.maxUses) * 100}%` }}
-                          />
-                        </div>
-                      </div>
-                    </td>
-                    <td className="p-4 text-slate-500 text-sm">{new Date(voucher.expiryDate).toLocaleDateString('vi-VN')}</td>
-                    <td className="p-4 text-center">
-                      <span className={`px-3 py-1 rounded-lg border text-[10px] font-bold uppercase ${getStatusStyle(voucher.status)}`}>
-                        {getStatusLabel(voucher.status)}
-                      </span>
-                    </td>
-                    <td className="p-4 pr-6 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <button className="p-2 bg-slate-50 text-slate-400 rounded-lg hover:bg-slate-100 transition-all">
-                          <Eye size={14} />
-                        </button>
-                        <button className="p-2 bg-slate-50 text-slate-400 rounded-lg hover:bg-slate-100 transition-all">
-                          <Edit3 size={14} />
-                        </button>
-                      </div>
-                    </td>
+            {/* Desktop Table */}
+            <div className="hidden md:block">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-slate-50 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                    <th className="text-left p-4 pl-6">Mã</th>
+                    <th className="text-left p-4">Giảm giá</th>
+                    <th className="text-left p-4">Đơn tối thiểu</th>
+                    <th className="text-center p-4">Đã dùng / Tổng</th>
+                    <th className="text-left p-4">Hết hạn</th>
+                    <th className="text-center p-4">Trạng thái</th>
+                    <th className="text-right p-4 pr-6">Thao tác</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {vouchers.map(voucher => (
+                    <tr key={voucher.id} className="border-t border-slate-50 hover:bg-white/50 transition-colors">
+                      <td className="p-4 pl-6">
+                        <div className="flex items-center gap-2">
+                          <code className="px-3 py-1.5 bg-slate-900 text-white font-mono font-bold rounded-lg text-sm">{voucher.code}</code>
+                          <button className="p-1 text-slate-300 hover:text-primary transition-all">
+                            <Copy size={14} />
+                          </button>
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <span className="font-black text-primary text-lg">
+                          {voucher.discountType === 'percentage' ? `${voucher.discount}%` : formatCurrency(voucher.discount, enterpriseConfig.currency)}
+                        </span>
+                      </td>
+                      <td className="p-4 font-bold text-slate-600">{formatCurrency(voucher.minPurchase, enterpriseConfig.currency)}</td>
+                      <td className="p-4 text-center">
+                        <div className="flex items-center justify-center gap-2">
+                          <span className="font-bold text-slate-800">{voucher.usedCount}/{voucher.maxUses}</span>
+                          <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-primary rounded-full"
+                              style={{ width: `${(voucher.usedCount / voucher.maxUses) * 100}%` }}
+                            />
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-4 text-slate-500 text-sm">{new Date(voucher.expiryDate).toLocaleDateString('vi-VN')}</td>
+                      <td className="p-4 text-center">
+                        <span className={`px-3 py-1 rounded-lg border text-[10px] font-bold uppercase ${getStatusStyle(voucher.status)}`}>
+                          {getStatusLabel(voucher.status)}
+                        </span>
+                      </td>
+                      <td className="p-4 pr-6 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <button className="p-2 bg-slate-50 text-slate-400 rounded-lg hover:bg-slate-100 transition-all">
+                            <Eye size={14} />
+                          </button>
+                          <button className="p-2 bg-slate-50 text-slate-400 rounded-lg hover:bg-slate-100 transition-all">
+                            <Edit3 size={14} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Cards */}
+            <div className="md:hidden p-4 space-y-3">
+              {vouchers.map(voucher => (
+                <div key={voucher.id} className="bg-white rounded-xl p-4 border border-slate-100">
+                  <div className="flex items-center justify-between">
+                    <code className="px-2.5 py-1 bg-slate-900 text-white font-mono font-bold rounded text-xs">{voucher.code}</code>
+                    <span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase ${getStatusStyle(voucher.status)}`}>
+                      {getStatusLabel(voucher.status)}
+                    </span>
+                  </div>
+                  <div className="border-t border-slate-100 mt-3 pt-3 space-y-2">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-slate-400">Giảm giá</span>
+                      <span className="font-black text-primary">
+                        {voucher.discountType === 'percentage' ? `${voucher.discount}%` : formatCurrency(voucher.discount, enterpriseConfig.currency)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-slate-400">Đơn tối thiểu</span>
+                      <span className="font-medium text-slate-600">{formatCurrency(voucher.minPurchase, enterpriseConfig.currency)}</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-slate-400">Đã dùng</span>
+                      <span className="font-medium text-slate-600">{voucher.usedCount}/{voucher.maxUses}</span>
+                    </div>
+                    <div className="flex justify-between text-xs">
+                      <span className="text-slate-400">Hết hạn</span>
+                      <span className="font-medium text-slate-600">{new Date(voucher.expiryDate).toLocaleDateString('vi-VN')}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
@@ -365,7 +403,7 @@ const Promotions: React.FC = () => {
                 <div className="p-3 bg-orange-50 text-orange-500 rounded-xl"><TrendingUp size={20} /></div>
               </div>
               <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Tổng chi khuyến mãi</p>
-              <p className="font-black text-3xl text-orange-500">{(campaigns.reduce((sum, c) => sum + c.spent, 0) / 1000000).toFixed(1)}M</p>
+              <p className="font-black text-2xl text-orange-500">{formatCurrency(campaigns.reduce((sum, c) => sum + c.spent, 0), enterpriseConfig.currency)}</p>
             </div>
             <div className="glass-card p-6">
               <div className="flex items-center gap-3 mb-4">
@@ -392,8 +430,8 @@ const Promotions: React.FC = () => {
                     />
                   </div>
                   <div className="flex justify-between text-xs text-slate-400 mt-1">
-                    <span>Đã chi: {(campaign.spent / 1000000).toFixed(1)}M</span>
-                    <span>Ngân sách: {(campaign.budget / 1000000).toFixed(1)}M</span>
+                    <span>Đã chi: {formatCurrency(campaign.spent, enterpriseConfig.currency)}</span>
+                    <span>Ngân sách: {formatCurrency(campaign.budget, enterpriseConfig.currency)}</span>
                   </div>
                 </div>
               ))}

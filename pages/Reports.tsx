@@ -7,13 +7,14 @@ import {
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart as RechartsPie, Pie, Cell } from 'recharts';
 import { useStore } from '../store';
+import { formatCurrency, getCurrencySymbol } from '../utils/formatters';
 
 type ReportTab = 'overview' | 'voids' | 'returns' | 'cash';
 
-const COLORS = ['#F57255', '#10B981', '#3B82F6', '#F59E0B', '#8B5CF6'];
+const COLORS = ['var(--primary-600)', '#10B981', '#3B82F6', '#F59E0B', '#8B5CF6'];
 
 const Reports: React.FC = () => {
-   const { orders, returnOrders, voidOrders, attendanceRecords } = useStore();
+   const { orders, returnOrders, voidOrders, attendanceRecords, enterpriseConfig } = useStore();
    const [activeTab, setActiveTab] = useState<ReportTab>('overview');
 
    // Weekly revenue data
@@ -119,8 +120,8 @@ const Reports: React.FC = () => {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as ReportTab)}
                   className={`px-5 py-3 rounded-2xl font-bold text-sm flex items-center gap-2 transition-all ${activeTab === tab.id
-                        ? 'bg-primary text-white shadow-xl shadow-primary/20'
-                        : 'bg-white/50 text-slate-500 hover:bg-white'
+                     ? 'bg-primary text-white shadow-xl shadow-primary/20'
+                     : 'bg-white/50 text-slate-500 hover:bg-white'
                      }`}
                >
                   <tab.icon size={16} />
@@ -135,7 +136,7 @@ const Reports: React.FC = () => {
                {/* KPI Cards */}
                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                   {[
-                     { label: 'Tổng Doanh Thu', val: `${orders.filter(o => o.status === 'completed').reduce((s, o) => s + o.total, 0).toLocaleString()}₫`, change: '+14%', icon: DollarSign, color: 'text-emerald-500', bg: 'bg-emerald-50' },
+                     { label: 'Tổng Doanh Thu', val: formatCurrency(orders.filter(o => o.status === 'completed').reduce((s, o) => s + o.total, 0), enterpriseConfig.currency), change: '+14%', icon: DollarSign, color: 'text-emerald-500', bg: 'bg-emerald-50' },
                      { label: 'Đơn Hoàn Thành', val: orders.filter(o => o.status === 'completed').length.toString(), change: '+8%', icon: Receipt, color: 'text-blue-500', bg: 'bg-blue-50' },
                      { label: 'Đơn Huỷ', val: voidOrders.length.toString(), change: voidOrders.length > 0 ? `-${voidOrders.length}` : '0', icon: XCircle, color: 'text-red-500', bg: 'bg-red-50' },
                      { label: 'Đơn Trả', val: returnOrders.length.toString(), change: returnOrders.length > 0 ? `-${returnOrders.length}` : '0', icon: RotateCcw, color: 'text-orange-500', bg: 'bg-orange-50' },
@@ -168,9 +169,9 @@ const Reports: React.FC = () => {
                            <Tooltip
                               cursor={{ fill: 'rgba(0,0,0,0.02)' }}
                               contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 40px rgba(0,0,0,0.1)' }}
-                              formatter={(value: number) => [`${value.toLocaleString()}₫`, 'Doanh thu']}
+                              formatter={(value: number) => [formatCurrency(value, enterpriseConfig.currency), 'Doanh thu']}
                            />
-                           <Bar dataKey="revenue" fill="#F57255" radius={[8, 8, 0, 0]} />
+                           <Bar dataKey="revenue" fill="var(--primary-600)" radius={[8, 8, 0, 0]} />
                         </BarChart>
                      </ResponsiveContainer>
                   </div>
@@ -179,10 +180,10 @@ const Reports: React.FC = () => {
                      <h3 className="text-lg font-black text-slate-800 mb-6">Tóm Tắt P&L</h3>
                      <div className="space-y-4">
                         {[
-                           { label: 'Tổng doanh thu', value: `${orders.filter(o => o.status === 'completed').reduce((s, o) => s + o.total, 0).toLocaleString()}₫`, color: 'text-emerald-500' },
-                           { label: 'Giảm giá', value: `-${orders.reduce((s, o) => s + o.discountAmount, 0).toLocaleString()}₫`, color: 'text-orange-500' },
-                           { label: 'Hoàn tiền', value: `-${returnOrders.reduce((s, r) => s + r.totalRefund, 0).toLocaleString()}₫`, color: 'text-red-500' },
-                           { label: 'Thuế thu', value: `+${orders.filter(o => o.status === 'completed').reduce((s, o) => s + o.tax, 0).toLocaleString()}₫`, color: 'text-blue-500' },
+                           { label: 'Tổng doanh thu', value: formatCurrency(orders.filter(o => o.status === 'completed').reduce((s, o) => s + o.total, 0), enterpriseConfig.currency), color: 'text-emerald-500' },
+                           { label: 'Giảm giá', value: `-${formatCurrency(orders.reduce((s, o) => s + o.discountAmount, 0), enterpriseConfig.currency)}`, color: 'text-orange-500' },
+                           { label: 'Hoàn tiền', value: `-${formatCurrency(returnOrders.reduce((s, r) => s + r.totalRefund, 0), enterpriseConfig.currency)}`, color: 'text-red-500' },
+                           { label: 'Thuế thu', value: `+${formatCurrency(orders.filter(o => o.status === 'completed').reduce((s, o) => s + o.tax, 0), enterpriseConfig.currency)}`, color: 'text-blue-500' },
                         ].map((item, i) => (
                            <div key={i} className="flex justify-between items-center py-3 border-b border-slate-100">
                               <span className="text-sm font-bold text-slate-500">{item.label}</span>
@@ -215,7 +216,7 @@ const Reports: React.FC = () => {
                         </div>
                      </div>
                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Giá trị huỷ</p>
-                     <h3 className="text-3xl font-black text-red-500">{voidAnalytics.totalAmount.toLocaleString()}₫</h3>
+                     <h3 className="text-3xl font-black text-red-500">{formatCurrency(voidAnalytics.totalAmount, enterpriseConfig.currency)}</h3>
                   </div>
                   <div className="glass-card p-6">
                      <div className="flex items-center gap-3 mb-4">
@@ -271,7 +272,7 @@ const Reports: React.FC = () => {
                                     <p className="font-bold text-slate-800 text-sm">{v.originalOrderId}</p>
                                     <p className="text-[10px] text-slate-400">{getVoidReasonLabel(v.voidReason)}</p>
                                  </div>
-                                 <p className="font-black text-red-500">{v.originalAmount.toLocaleString()}₫</p>
+                                 <p className="font-black text-red-500">{formatCurrency(v.originalAmount, enterpriseConfig.currency)}</p>
                               </div>
                            ))}
                            {voidOrders.length === 0 && (
@@ -306,7 +307,7 @@ const Reports: React.FC = () => {
                   </div>
                   <div className="glass-card p-6">
                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Tổng hoàn tiền</p>
-                     <h3 className="text-3xl font-black text-red-500">{returnAnalytics.totalRefund.toLocaleString()}₫</h3>
+                     <h3 className="text-3xl font-black text-red-500">{formatCurrency(returnAnalytics.totalRefund, enterpriseConfig.currency)}</h3>
                   </div>
                   <div className="glass-card p-6">
                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Tỷ lệ trả hàng</p>
@@ -333,10 +334,10 @@ const Reports: React.FC = () => {
                               </div>
                            </div>
                            <div className="text-right">
-                              <p className="font-black text-primary text-lg">{r.totalRefund.toLocaleString()}₫</p>
+                              <p className="font-black text-primary text-lg">{formatCurrency(r.totalRefund, enterpriseConfig.currency)}</p>
                               <span className={`text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded-lg ${r.status === 'pending' ? 'bg-amber-50 text-amber-500' :
-                                    r.status === 'approved' ? 'bg-emerald-50 text-emerald-500' :
-                                       'bg-red-50 text-red-500'
+                                 r.status === 'approved' ? 'bg-emerald-50 text-emerald-500' :
+                                    'bg-red-50 text-red-500'
                                  }`}>
                                  {r.status === 'pending' && 'Chờ duyệt'}
                                  {r.status === 'approved' && 'Đã duyệt'}
@@ -362,16 +363,16 @@ const Reports: React.FC = () => {
                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="glass-card p-6">
                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Tiền mặt dự kiến</p>
-                     <h3 className="text-3xl font-black text-slate-800">{cashAnalytics.expectedCash.toLocaleString()}₫</h3>
+                     <h3 className="text-3xl font-black text-slate-800">{formatCurrency(cashAnalytics.expectedCash, enterpriseConfig.currency)}</h3>
                   </div>
                   <div className="glass-card p-6">
                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Tiền mặt thực tế</p>
-                     <h3 className="text-3xl font-black text-emerald-500">{cashAnalytics.actualCash.toLocaleString()}₫</h3>
+                     <h3 className="text-3xl font-black text-emerald-500">{formatCurrency(cashAnalytics.actualCash, enterpriseConfig.currency)}</h3>
                   </div>
                   <div className="glass-card p-6">
                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Chênh lệch</p>
                      <h3 className={`text-3xl font-black ${cashAnalytics.isBalanced ? 'text-emerald-500' : 'text-red-500'}`}>
-                        {cashAnalytics.discrepancy === 0 ? '0₫ ✓' : `${cashAnalytics.discrepancy.toLocaleString()}₫`}
+                        {cashAnalytics.discrepancy === 0 ? `0${getCurrencySymbol(enterpriseConfig.currency)} ✓` : formatCurrency(cashAnalytics.discrepancy, enterpriseConfig.currency)}
                      </h3>
                   </div>
                </div>
@@ -396,13 +397,13 @@ Ca: ${cashAnalytics.shifts} ca đã kết thúc
 THANH TOÁN TIỀN MẶT
 ─────────────────────────────────────
 Số giao dịch: ${orders.filter(o => o.paymentMethod === 'Cash').length}
-Tổng thu tiền mặt: ${cashAnalytics.expectedCash.toLocaleString()}₫
+Tổng thu tiền mặt: ${formatCurrency(cashAnalytics.expectedCash, enterpriseConfig.currency)}
 
 ĐỐI SOÁT
 ─────────────────────────────────────
-Tiền mặt dự kiến:  ${cashAnalytics.expectedCash.toLocaleString()}₫
-Tiền mặt kiểm đếm: ${cashAnalytics.actualCash.toLocaleString()}₫
-Chênh lệch:        ${cashAnalytics.discrepancy.toLocaleString()}₫
+Tiền mặt dự kiến:  ${formatCurrency(cashAnalytics.expectedCash, enterpriseConfig.currency)}
+Tiền mặt kiểm đếm: ${formatCurrency(cashAnalytics.actualCash, enterpriseConfig.currency)}
+Chênh lệch:        ${formatCurrency(cashAnalytics.discrepancy, enterpriseConfig.currency)}
 
 Trạng thái: ${cashAnalytics.isBalanced ? '✓ CÂN BẰNG' : '⚠ CẦN KIỂM TRA'}
 ========================================`}

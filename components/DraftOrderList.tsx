@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { X, FileText, Clock, Trash2, Play, Table2, Search, Filter, Calendar } from 'lucide-react';
 import { DraftOrder } from '../types';
 
@@ -10,6 +11,7 @@ interface DraftOrderListProps {
 }
 
 const DraftOrderList: React.FC<DraftOrderListProps> = ({ drafts, onClose, onResume, onDelete }) => {
+    const { t, i18n } = useTranslation();
     const [searchQuery, setSearchQuery] = useState('');
     const [filterBy, setFilterBy] = useState<'all' | 'mine'>('all');
 
@@ -28,10 +30,10 @@ const DraftOrderList: React.FC<DraftOrderListProps> = ({ drafts, onClose, onResu
         const diffMins = Math.floor(diffMs / 60000);
         const diffHours = Math.floor(diffMins / 60);
 
-        if (diffMins < 1) return 'Vừa lưu';
-        if (diffMins < 60) return `${diffMins} phút trước`;
-        if (diffHours < 24) return `${diffHours} giờ trước`;
-        return date.toLocaleDateString('vi-VN');
+        if (diffMins < 1) return t('pos.just_saved');
+        if (diffMins < 60) return t('pos.mins_ago', { count: diffMins });
+        if (diffHours < 24) return t('pos.hours_ago', { count: diffHours });
+        return date.toLocaleDateString(i18n.language === 'vi' ? 'vi-VN' : 'en-US');
     };
 
     const getExpiryWarning = (dateString: string) => {
@@ -40,7 +42,7 @@ const DraftOrderList: React.FC<DraftOrderListProps> = ({ drafts, onClose, onResu
         const diffMs = now.getTime() - date.getTime();
         const diffHours = diffMs / (1000 * 60 * 60);
 
-        if (diffHours >= 20) return 'Sắp hết hạn';
+        if (diffHours >= 20) return t('pos.expiring_soon');
         return null;
     };
 
@@ -54,9 +56,9 @@ const DraftOrderList: React.FC<DraftOrderListProps> = ({ drafts, onClose, onResu
                             <FileText size={28} />
                         </div>
                         <div>
-                            <h2 className="text-2xl font-black text-slate-800 tracking-tight">Đơn Tạm Lưu</h2>
+                            <h2 className="text-2xl font-black text-slate-800 tracking-tight">{t('pos.draft_orders')}</h2>
                             <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest mt-1">
-                                {drafts.length} đơn • Tự động xoá sau 24h
+                                {t('pos.draft_subtitle', { count: drafts.length })}
                             </p>
                         </div>
                     </div>
@@ -74,7 +76,7 @@ const DraftOrderList: React.FC<DraftOrderListProps> = ({ drafts, onClose, onResu
                         <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" />
                         <input
                             type="text"
-                            placeholder="Tìm theo tên hoặc mã đơn..."
+                            placeholder={t('pos.search_draft')}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full pl-12 pr-4 py-3 bg-white/50 border border-slate-200 rounded-xl text-slate-800 font-bold outline-none focus:border-primary transition-all text-sm"
@@ -84,20 +86,20 @@ const DraftOrderList: React.FC<DraftOrderListProps> = ({ drafts, onClose, onResu
                         <button
                             onClick={() => setFilterBy('all')}
                             className={`px-4 py-2.5 rounded-xl font-bold text-xs transition-all ${filterBy === 'all'
-                                    ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                                    : 'bg-white/50 text-slate-500 hover:bg-white'
+                                ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                                : 'bg-white/50 text-slate-500 hover:bg-white'
                                 }`}
                         >
-                            Tất cả
+                            {t('pos.filter_all')}
                         </button>
                         <button
                             onClick={() => setFilterBy('mine')}
                             className={`px-4 py-2.5 rounded-xl font-bold text-xs transition-all ${filterBy === 'mine'
-                                    ? 'bg-primary text-white shadow-lg shadow-primary/20'
-                                    : 'bg-white/50 text-slate-500 hover:bg-white'
+                                ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                                : 'bg-white/50 text-slate-500 hover:bg-white'
                                 }`}
                         >
-                            Của tôi
+                            {t('pos.filter_mine')}
                         </button>
                     </div>
                 </div>
@@ -107,8 +109,8 @@ const DraftOrderList: React.FC<DraftOrderListProps> = ({ drafts, onClose, onResu
                     {filteredDrafts.length === 0 ? (
                         <div className="text-center py-16">
                             <FileText size={56} className="mx-auto mb-4 text-slate-200" />
-                            <p className="font-bold text-slate-400 mb-2">Không có đơn tạm lưu</p>
-                            <p className="text-sm text-slate-300">Nhấn nút "Save Draft" trong giỏ hàng để lưu đơn</p>
+                            <p className="font-bold text-slate-400 mb-2">{t('pos.no_drafts')}</p>
+                            <p className="text-sm text-slate-300">{t('pos.save_draft_instruction')}</p>
                         </div>
                     ) : (
                         filteredDrafts.map((draft) => {
@@ -140,12 +142,12 @@ const DraftOrderList: React.FC<DraftOrderListProps> = ({ drafts, onClose, onResu
                                                     </span>
                                                     <span className="flex items-center gap-1">
                                                         <FileText size={12} />
-                                                        {draft.items.length} sản phẩm
+                                                        {t('pos.products_count', { count: draft.items.length })}
                                                     </span>
                                                     {draft.tableId && (
                                                         <span className="flex items-center gap-1">
                                                             <Table2 size={12} />
-                                                            Bàn {draft.tableId}
+                                                            {t('pos.table')} {draft.tableId}
                                                         </span>
                                                     )}
                                                 </div>
@@ -158,7 +160,7 @@ const DraftOrderList: React.FC<DraftOrderListProps> = ({ drafts, onClose, onResu
                                                     ))}
                                                     {draft.items.length > 3 && (
                                                         <span className="px-2 py-1 bg-slate-100 text-slate-400 text-[10px] font-bold rounded-lg">
-                                                            +{draft.items.length - 3} khác
+                                                            +{draft.items.length - 3} {t('common.other') /* Fallback if not available */}
                                                         </span>
                                                     )}
                                                 </div>
@@ -169,7 +171,7 @@ const DraftOrderList: React.FC<DraftOrderListProps> = ({ drafts, onClose, onResu
                                             <button
                                                 onClick={() => onDelete(draft.id)}
                                                 className="p-2.5 bg-red-50 text-red-400 hover:bg-red-500 hover:text-white rounded-xl transition-all opacity-0 group-hover:opacity-100"
-                                                title="Xoá đơn"
+                                                title={t('common.delete')}
                                             >
                                                 <Trash2 size={16} />
                                             </button>
@@ -178,7 +180,7 @@ const DraftOrderList: React.FC<DraftOrderListProps> = ({ drafts, onClose, onResu
                                                 className="px-4 py-2.5 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all flex items-center gap-2 text-xs"
                                             >
                                                 <Play size={14} />
-                                                Tiếp tục
+                                                {t('pos.continue')}
                                             </button>
                                         </div>
                                     </div>
@@ -193,13 +195,13 @@ const DraftOrderList: React.FC<DraftOrderListProps> = ({ drafts, onClose, onResu
                     <div className="p-6 border-t border-white/10 bg-white/5 flex items-center justify-between">
                         <p className="text-xs text-slate-400">
                             <Calendar size={12} className="inline mr-1" />
-                            Đơn tạm lưu sẽ tự động xoá sau 24 giờ
+                            {t('pos.draft_auto_delete')}
                         </p>
                         <button
                             onClick={onClose}
                             className="px-6 py-3 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-all text-sm"
                         >
-                            Đóng
+                            {t('common.close')}
                         </button>
                     </div>
                 )}

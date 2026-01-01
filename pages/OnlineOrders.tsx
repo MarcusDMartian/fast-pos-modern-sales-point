@@ -6,6 +6,7 @@ import {
     Filter, Search, RefreshCw, Bell
 } from 'lucide-react';
 import { useStore } from '../store';
+import { formatCurrency } from '../utils/formatters';
 
 type OrderChannel = 'all' | 'grabfood' | 'shopeefood' | 'gojek' | 'website';
 type OnlineOrderStatus = 'new' | 'confirmed' | 'preparing' | 'ready' | 'picked_up' | 'delivered' | 'cancelled';
@@ -95,7 +96,7 @@ const MOCK_ONLINE_ORDERS: OnlineOrder[] = [
 ];
 
 const OnlineOrders: React.FC = () => {
-    const { showToast } = useStore();
+    const { showToast, enterpriseConfig } = useStore();
     const [orders, setOrders] = useState<OnlineOrder[]>(MOCK_ONLINE_ORDERS);
     const [channelFilter, setChannelFilter] = useState<OrderChannel>('all');
     const [selectedOrder, setSelectedOrder] = useState<OnlineOrder | null>(null);
@@ -216,8 +217,8 @@ const OnlineOrders: React.FC = () => {
                             key={channel}
                             onClick={() => setChannelFilter(channel as OrderChannel)}
                             className={`px-4 py-2 rounded-lg font-bold text-sm transition-all ${channelFilter === channel
-                                    ? 'bg-primary text-white'
-                                    : 'text-slate-500 hover:bg-slate-100'
+                                ? 'bg-primary text-white'
+                                : 'text-slate-500 hover:bg-slate-100'
                                 }`}
                         >
                             {channel === 'all' ? 'Tất cả' : getChannelStyle(channel).name}
@@ -270,7 +271,7 @@ const OnlineOrders: React.FC = () => {
                                     </div>
                                 </div>
                                 <div className="text-right">
-                                    <p className="font-black text-xl text-primary">{order.total.toLocaleString()}₫</p>
+                                    <p className="font-black text-xl text-primary">{formatCurrency(order.total, enterpriseConfig.currency)}</p>
                                     <p className="text-xs text-slate-400">{order.items.length} món</p>
                                 </div>
                             </div>
@@ -372,7 +373,7 @@ const OnlineOrders: React.FC = () => {
                                             <p className="font-bold text-slate-800">{item.quantity}x {item.name}</p>
                                             {item.note && <p className="text-xs text-slate-400">📝 {item.note}</p>}
                                         </div>
-                                        <p className="font-bold text-slate-600">{(item.quantity * item.price).toLocaleString()}₫</p>
+                                        <p className="font-bold text-slate-600">{formatCurrency(item.quantity * item.price, enterpriseConfig.currency)}</p>
                                     </div>
                                 ))}
                             </div>
@@ -380,21 +381,21 @@ const OnlineOrders: React.FC = () => {
                             <div className="space-y-2">
                                 <div className="flex justify-between text-sm">
                                     <span className="text-slate-500">Tạm tính</span>
-                                    <span className="font-bold text-slate-800">{selectedOrder.subtotal.toLocaleString()}₫</span>
+                                    <span className="font-bold text-slate-800">{formatCurrency(selectedOrder.subtotal, enterpriseConfig.currency)}</span>
                                 </div>
                                 <div className="flex justify-between text-sm">
                                     <span className="text-slate-500">Phí giao hàng</span>
-                                    <span className="font-bold text-slate-800">{selectedOrder.deliveryFee.toLocaleString()}₫</span>
+                                    <span className="font-bold text-slate-800">{formatCurrency(selectedOrder.deliveryFee, enterpriseConfig.currency)}</span>
                                 </div>
                                 {selectedOrder.discount > 0 && (
                                     <div className="flex justify-between text-sm">
                                         <span className="text-slate-500">Giảm giá</span>
-                                        <span className="font-bold text-emerald-500">-{selectedOrder.discount.toLocaleString()}₫</span>
+                                        <span className="font-bold text-emerald-500">-{formatCurrency(selectedOrder.discount, enterpriseConfig.currency)}</span>
                                     </div>
                                 )}
                                 <div className="flex justify-between pt-2 border-t border-slate-200">
                                     <span className="font-bold text-slate-800">Tổng cộng</span>
-                                    <span className="font-black text-xl text-primary">{selectedOrder.total.toLocaleString()}₫</span>
+                                    <span className="font-black text-xl text-primary">{formatCurrency(selectedOrder.total, enterpriseConfig.currency)}</span>
                                 </div>
                             </div>
                         </div>

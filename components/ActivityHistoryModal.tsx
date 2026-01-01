@@ -1,6 +1,8 @@
-
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { X, CheckCircle2, Package, RefreshCcw, Clock, ArrowDown, Loader2 } from 'lucide-react';
+import { useStore } from '../store';
+import { formatCurrency } from '../utils/formatters';
 
 interface Activity {
   id: string | number;
@@ -21,28 +23,44 @@ interface ActivityHistoryModalProps {
 const ICONS = [CheckCircle2, Package, RefreshCcw];
 const COLORS = ['text-emerald-500', 'text-blue-500', 'text-orange-500'];
 const BGS = ['bg-emerald-50', 'bg-blue-50', 'bg-orange-50'];
-const TITLES = ['Sale Completed', 'Stock Updated', 'Refund Issued', 'Inventory Audit', 'System Backup', 'Price Change'];
-
-const generateMockActivities = (count: number, startIdx: number): Activity[] => {
-  return Array.from({ length: count }).map((_, i) => {
-    const idx = startIdx + i;
-    const typeIdx = Math.floor(Math.random() * 3);
-    return {
-      id: `ACT-${idx}-${Date.now()}`,
-      title: TITLES[Math.floor(Math.random() * TITLES.length)],
-      subtitle: `Action Ref #${10000 + idx}`,
-      amount: typeIdx === 0 ? `+$${(Math.random() * 100).toFixed(2)}` : typeIdx === 1 ? 'Inventory' : `-$${(Math.random() * 50).toFixed(2)}`,
-      time: `${Math.floor(idx / 2) + 1}h ago`,
-      timestamp: Date.now() - idx * 3600000,
-      icon: ICONS[typeIdx],
-      color: COLORS[typeIdx],
-      bg: BGS[typeIdx],
-    };
-  });
-};
 
 const ActivityHistoryModal: React.FC<ActivityHistoryModalProps> = ({ onClose }) => {
-  const [activities, setActivities] = useState<Activity[]>(generateMockActivities(20, 0));
+  const { t } = useTranslation();
+  const { enterpriseConfig } = useStore();
+
+  const TITLES = [
+    t('activities.sale_complete'),
+    t('activities.inventory_update'),
+    t('activities.refund'),
+    t('activities.inventory_audit'),
+    t('activities.system_backup'),
+    t('activities.price_change')
+  ];
+
+  const generateMockActivities = useCallback((count: number, startIdx: number, currency: string): Activity[] => {
+    return Array.from({ length: count }).map((_, i) => {
+      const idx = startIdx + i;
+      const typeIdx = Math.floor(Math.random() * 3);
+      return {
+        id: `ACT-${idx}-${Date.now()}`,
+        title: TITLES[Math.floor(Math.random() * TITLES.length)],
+        subtitle: `${t('dashboard.activities.order_suffix', { id: 10000 + idx })}`,
+        amount: typeIdx === 0 ? `+${formatCurrency(Math.random() * 500000 + 50000, currency)}` : typeIdx === 1 ? t('sidebar.inventory') : `-${formatCurrency(Math.random() * 200000 + 20000, currency)}`,
+        time: `${Math.floor(idx / 2) + 1}h ago`,
+        timestamp: Date.now() - idx * 3600000,
+        icon: ICONS[typeIdx],
+        color: COLORS[typeIdx],
+        bg: BGS[typeIdx],
+      };
+    });
+  }, [t, TITLES]);
+
+  const [activities, setActivities] = useState<Activity[]>([]);
+
+  useEffect(() => {
+    setActivities(generateMockActivities(20, 0, enterpriseConfig.currency));
+  }, [enterpriseConfig.currency, generateMockActivities]);
+
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const observer = useRef<IntersectionObserver | null>(null);
@@ -64,7 +82,7 @@ const ActivityHistoryModal: React.FC<ActivityHistoryModalProps> = ({ onClose }) 
     setIsLoading(true);
     // Simulate API delay
     setTimeout(() => {
-      const nextBatch = generateMockActivities(20, activities.length);
+      const nextBatch = generateMockActivities(20, activities.length, enterpriseConfig.currency);
       setActivities((prev) => [...prev, ...nextBatch]);
       setIsLoading(false);
       // Stop after 100 items for demo
@@ -73,12 +91,12 @@ const ActivityHistoryModal: React.FC<ActivityHistoryModalProps> = ({ onClose }) 
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[#333984]/30 backdrop-blur-md p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[var(--primary-700)]/30 backdrop-blur-md p-4 animate-in fade-in duration-200">
       <div className="bg-white w-full max-w-2xl rounded-[3.5rem] shadow-2xl overflow-hidden animate-in zoom-in duration-300 flex flex-col h-[85vh]">
         <div className="p-8 border-b border-gray-50 flex justify-between items-center bg-white sticky top-0 z-10">
           <div>
-            <h2 className="text-2xl font-black text-[#333984] italic uppercase tracking-tight">Hoạt động Gần đây</h2>
-            <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest mt-1">Lịch sử chi tiết hệ thống</p>
+            <h2 className="text-2xl font-black text-[var(--primary-700)] italic uppercase tracking-tight">{t('activities.title')}</h2>
+            <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest mt-1">{t('activities.subtitle')}</p>
           </div>
           <button onClick={onClose} className="p-3 bg-gray-100 text-gray-500 hover:bg-gray-200 rounded-full transition-all">
             <X size={24} />
@@ -90,7 +108,7 @@ const ActivityHistoryModal: React.FC<ActivityHistoryModalProps> = ({ onClose }) 
             <div
               key={activity.id}
               ref={index === activities.length - 1 ? lastElementRef : null}
-              className="flex items-center gap-6 p-6 bg-slate-50/50 border border-slate-100 rounded-[2rem] hover:bg-white hover:shadow-xl hover:shadow-blue-50/50 hover:border-blue-100 transition-all group animate-fade-in"
+              className="flex items-center gap-6 p-6 bg-slate-50/50 border border-slate-100 rounded-[2rem] hover:bg-white hover:shadow-xl hover:shadow-primary-100/50 hover:border-blue-100 transition-all group animate-fade-in"
             >
               <div className={`p-4 rounded-2xl ${activity.bg} ${activity.color} shadow-sm group-hover:scale-110 transition-transform`}>
                 <activity.icon size={24} />
@@ -112,13 +130,13 @@ const ActivityHistoryModal: React.FC<ActivityHistoryModalProps> = ({ onClose }) 
           {isLoading && (
             <div className="py-10 flex flex-col items-center justify-center gap-3 text-[#0062FF]">
               <Loader2 size={32} className="animate-spin" />
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] animate-pulse">Đang tải thêm...</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] animate-pulse">{t('activities.load_more')}</p>
             </div>
           )}
 
           {!hasMore && (
             <div className="py-10 text-center opacity-30">
-              <p className="text-[10px] font-black uppercase tracking-[0.2em]">Bạn đã xem hết lịch sử gần đây</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.2em]">{t('activities.no_more')}</p>
             </div>
           )}
         </div>

@@ -3,8 +3,11 @@ import React, { useState, useEffect } from 'react';
 import { ShoppingCart, Package, FileText, Plus, Search, ChevronRight, Truck, CheckCircle2, Clock, AlertTriangle, X, Trash2, Building2, Hash, Printer, Download } from 'lucide-react';
 import { PurchaseOrder, Supplier, Product } from '../types';
 import { MOCK_SUPPLIERS, MOCK_PRODUCTS } from '../constants';
+import { useStore } from '../store';
+import { formatCurrency, getCurrencySymbol } from '../utils/formatters';
 
 const Procurement: React.FC = () => {
+  const { enterpriseConfig } = useStore();
   const [pos, setPos] = useState<PurchaseOrder[]>([
     { id: 'PO-1001', supplierId: 'S1', supplierName: 'Coffee Farm Direct', date: '2025-05-10', total: 1500, status: 'Sent', items: [{ productId: 'SKU-1001', name: 'Espresso Beans', quantity: 10, cost: 150 }] },
     { id: 'PO-1002', supplierId: 'S2', supplierName: 'Dairy Fresh Vietnam', date: '2025-05-08', total: 800, status: 'Received', items: [] },
@@ -73,19 +76,19 @@ const Procurement: React.FC = () => {
       </div>
 
       <div className="glass-card shadow-xl overflow-hidden animate-in fade-in duration-500">
-        <div className="p-10 border-b border-slate-100 flex items-center justify-between bg-white/40">
+        <div className="p-6 md:p-10 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white/40">
           <div>
-            <h3 className="text-lg font-extrabold text-slate-800 tracking-tight">Active Requisitions</h3>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Status monitor</p>
+            <h3 className="text-base md:text-lg font-extrabold text-slate-800 tracking-tight">Active Requisitions</h3>
+            <p className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Status monitor</p>
           </div>
-          <div className="flex gap-3">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-              <input className="bg-white/50 border border-white pl-12 pr-6 py-3 rounded-xl text-[13px] font-bold outline-none w-72 focus:bg-white focus:border-primary transition-all shadow-sm" placeholder="Lookup PO Number..." />
-            </div>
+          <div className="relative">
+            <Search className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
+            <input className="bg-white/50 border border-white pl-10 md:pl-12 pr-4 md:pr-6 py-2.5 md:py-3 rounded-lg md:rounded-xl text-xs md:text-[13px] font-bold outline-none w-full md:w-72 focus:bg-white focus:border-primary transition-all shadow-sm" placeholder="Lookup PO..." />
           </div>
         </div>
-        <div className="overflow-x-auto">
+
+        {/* Desktop Table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left table-fixed min-w-[1000px] border-collapse">
             <thead>
               <tr className="bg-slate-900/5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
@@ -113,11 +116,11 @@ const Procurement: React.FC = () => {
                       {order.status}
                     </span>
                   </td>
-                  <td className="p-10 text-right pr-12 font-extrabold text-slate-800 text-lg group-hover:text-primary transition-colors">${order.total.toLocaleString()}</td>
+                  <td className="p-10 text-right pr-12 font-extrabold text-slate-800 text-lg group-hover:text-primary transition-colors">{formatCurrency(order.total, enterpriseConfig.currency)}</td>
                   <td className="p-8 text-right">
                     <button
                       onClick={() => setSelectedPO(order)}
-                      className="p-3 bg-gray-50 text-gray-400 rounded-xl hover:bg-[#2A46FF] hover:text-white transition-all shadow-sm"
+                      className="p-3 bg-gray-50 text-gray-400 rounded-xl hover:bg-[var(--primary-600)] hover:text-white transition-all shadow-sm"
                     >
                       <ChevronRight size={18} />
                     </button>
@@ -126,6 +129,42 @@ const Procurement: React.FC = () => {
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile Cards */}
+        <div className="md:hidden p-4 space-y-3">
+          {pos.map(order => (
+            <div key={order.id} className="bg-white rounded-xl p-4 border border-slate-100 shadow-sm">
+              <div className="flex items-center justify-between">
+                <span className="font-extrabold text-sm text-slate-800">{order.id}</span>
+                <span className={`px-2.5 py-1 rounded-lg text-[8px] font-bold uppercase ${order.status === 'Received' ? 'bg-emerald-50 text-emerald-600' : 'bg-blue-50 text-blue-600'}`}>
+                  {order.status}
+                </span>
+              </div>
+              <div className="border-t border-slate-100 mt-3 pt-3 space-y-2">
+                <div className="flex justify-between text-xs">
+                  <span className="text-slate-400">Nhà cung cấp</span>
+                  <span className="font-bold text-slate-700">{order.supplierName}</span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-slate-400">Ngày</span>
+                  <span className="font-medium text-slate-600">{order.date}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-400 text-xs">Tổng tiền</span>
+                  <span className="font-black text-primary text-base">{formatCurrency(order.total, enterpriseConfig.currency)}</span>
+                </div>
+              </div>
+              <div className="border-t border-slate-100 mt-3 pt-3">
+                <button
+                  onClick={() => setSelectedPO(order)}
+                  className="w-full py-2.5 bg-slate-50 text-slate-600 rounded-lg font-bold text-xs flex items-center justify-center gap-2"
+                >
+                  Xem chi tiết <ChevronRight size={14} />
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -147,7 +186,7 @@ const Procurement: React.FC = () => {
                 <select
                   value={newSupplierId}
                   onChange={(e) => setNewSupplierId(e.target.value)}
-                  className="w-full bg-gray-50 px-6 py-5 rounded-2xl text-lg font-black text-[#333984] outline-none border-2 border-transparent focus:border-[#2A46FF] appearance-none transition-all"
+                  className="w-full bg-gray-50 px-6 py-5 rounded-2xl text-lg font-black text-[var(--primary-700)] outline-none border-2 border-transparent focus:border-[var(--primary-600)] appearance-none transition-all"
                 >
                   {MOCK_SUPPLIERS.map(s => <option key={s.id} value={s.id}>{s.name} ({s.code})</option>)}
                 </select>
@@ -158,7 +197,7 @@ const Procurement: React.FC = () => {
                   <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Order Items</label>
                   <button
                     onClick={() => setNewItems([...newItems, { productId: MOCK_PRODUCTS[0].id, name: MOCK_PRODUCTS[0].name, quantity: 1, cost: MOCK_PRODUCTS[0].price }])}
-                    className="text-[10px] font-black text-[#2A46FF] flex items-center gap-1 hover:underline"
+                    className="text-[10px] font-black text-[var(--primary-600)] flex items-center gap-1 hover:underline"
                   >
                     <Plus size={12} /> Add Line
                   </button>
@@ -184,7 +223,7 @@ const Procurement: React.FC = () => {
                         onChange={(e) => setNewItems(newItems.map((it, i) => i === idx ? { ...it, quantity: parseInt(e.target.value) } : it))}
                       />
                       <div className="w-24 relative">
-                        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-[10px]">$</span>
+                        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-[10px]">{getCurrencySymbol(enterpriseConfig.currency)}</span>
                         <input type="number" className="w-full bg-white pl-5 pr-2 py-2 rounded-lg text-xs font-bold" value={item.cost} onChange={(e) => setNewItems(newItems.map((it, i) => i === idx ? { ...it, cost: parseFloat(e.target.value) } : it))} />
                       </div>
                       <button onClick={() => setNewItems(newItems.filter((_, i) => i !== idx))} className="text-red-300 hover:text-red-500 transition-all"><Trash2 size={16} /></button>
@@ -196,8 +235,8 @@ const Procurement: React.FC = () => {
 
             <div className="p-10 bg-slate-900 border-t border-white/5 flex items-center justify-between">
               <div className="px-4">
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Requisition Estimate</p>
-                <p className="text-3xl font-extrabold text-primary tracking-tight">${newItems.reduce((acc, it) => acc + (it.cost * it.quantity), 0).toLocaleString()}</p>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Dự toán đơn hàng</p>
+                <p className="text-3xl font-extrabold text-primary tracking-tight">{formatCurrency(newItems.reduce((acc, it) => acc + (it.cost * it.quantity), 0), enterpriseConfig.currency)}</p>
               </div>
               <button
                 onClick={handleCreatePO}
@@ -230,11 +269,11 @@ const Procurement: React.FC = () => {
                   <button
                     key={po.id}
                     onClick={() => handleReceiveStock(po.id)}
-                    className="w-full p-6 bg-gray-50 rounded-3xl border border-gray-100 flex items-center justify-between hover:border-[#2A46FF] hover:bg-blue-50/20 transition-all group"
+                    className="w-full p-6 bg-gray-50 rounded-3xl border border-gray-100 flex items-center justify-between hover:border-[var(--primary-600)] hover:bg-blue-50/20 transition-all group"
                   >
                     <div className="text-left">
-                      <p className="font-black text-[#333984] text-md">{po.id}</p>
-                      <p className="text-[10px] font-bold text-gray-500">{po.supplierName} • ${po.total.toLocaleString()}</p>
+                      <p className="font-black text-[var(--primary-700)] text-md">{po.id}</p>
+                      <p className="text-[10px] font-bold text-gray-500">{po.supplierName} • {formatCurrency(po.total, enterpriseConfig.currency)}</p>
                     </div>
                     <div className="p-3 bg-white text-green-500 rounded-xl group-hover:scale-110 transition-transform"><CheckCircle2 size={18} /></div>
                   </button>
@@ -290,10 +329,10 @@ const Procurement: React.FC = () => {
                       <div className="w-14 h-14 bg-slate-900/5 rounded-2xl flex items-center justify-center font-extrabold text-[15px] text-primary shadow-inner">{item.quantity}x</div>
                       <div>
                         <p className="text-[15px] font-extrabold text-slate-800 tracking-tight">{item.name}</p>
-                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1.5">Cost Basin: ${item.cost}</p>
+                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1.5">Giá nhập: {formatCurrency(item.cost, enterpriseConfig.currency)}</p>
                       </div>
                     </div>
-                    <p className="text-xl font-extrabold text-slate-800 group-hover:text-primary transition-colors tracking-tight">${(item.cost * item.quantity).toLocaleString()}</p>
+                    <p className="text-xl font-extrabold text-slate-800 group-hover:text-primary transition-colors tracking-tight">{formatCurrency(item.cost * item.quantity, enterpriseConfig.currency)}</p>
                   </div>
                 ))}
               </div>
