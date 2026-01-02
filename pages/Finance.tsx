@@ -35,10 +35,10 @@ interface Voucher {
 
 // Mock data
 const MOCK_BUDGETS: Budget[] = [
-  { id: 'BUD-001', name: 'Nguyên liệu thực phẩm', category: 'COGS', allocated: 50000000, spent: 35000000, period: 'T12/2024' },
-  { id: 'BUD-002', name: 'Tiền lương nhân viên', category: 'HR', allocated: 80000000, spent: 75000000, period: 'T12/2024' },
-  { id: 'BUD-003', name: 'Marketing & Quảng cáo', category: 'Marketing', allocated: 15000000, spent: 8000000, period: 'T12/2024' },
-  { id: 'BUD-004', name: 'Chi phí vận hành', category: 'Operations', allocated: 20000000, spent: 12000000, period: 'T12/2024' },
+  { id: 'BUD-001', name: 'Nguyên liệu thực phẩm', category: 'COGS', allocated: 50000000, spent: 35000000, period: 'T01/2026' },
+  { id: 'BUD-002', name: 'Tiền lương nhân viên', category: 'HR', allocated: 80000000, spent: 75000000, period: 'T01/2026' },
+  { id: 'BUD-003', name: 'Marketing & Quảng cáo', category: 'Marketing', allocated: 15000000, spent: 8000000, period: 'T01/2026' },
+  { id: 'BUD-004', name: 'Chi phí vận hành', category: 'Operations', allocated: 20000000, spent: 12000000, period: 'T01/2026' },
 ];
 
 const MOCK_VOUCHERS: Voucher[] = [
@@ -54,7 +54,7 @@ const Finance: React.FC = () => {
   const [showAddVoucher, setShowAddVoucher] = useState(false);
   const [expenseAmount, setExpenseAmount] = useState('');
   const [expenseNote, setExpenseNote] = useState('');
-  const [expenseCategory, setExpenseCategory] = useState('Utilities');
+  const [expenseCategory, setExpenseCategory] = useState('Tiện ích');
 
   // Voucher form state
   const [voucherType, setVoucherType] = useState<'receipt' | 'payment'>('receipt');
@@ -648,10 +648,10 @@ const Finance: React.FC = () => {
                   onChange={(e) => setExpenseCategory(e.target.value)}
                   className="w-full mt-2 px-6 py-4 bg-slate-50 rounded-2xl font-bold outline-none border-2 border-transparent focus:border-primary"
                 >
-                  <option>Utilities</option>
-                  <option>Supplies</option>
-                  <option>Staff Meal</option>
-                  <option>Emergency Repairs</option>
+                  <option>Tiện ích</option>
+                  <option>Vật tư</option>
+                  <option>Bữa ăn nhân viên</option>
+                  <option>Sửa chữa khẩn cấp</option>
                   <option>Marketing</option>
                 </select>
               </div>

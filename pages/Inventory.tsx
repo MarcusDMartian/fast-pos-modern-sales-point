@@ -2,13 +2,14 @@ import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useStore } from '../store';
 import { Product, StockMovement, ProductType, ItemType } from '../types';
-import { Package, AlertCircle, History, Plus, Search, RefreshCcw, Check, FileText, FlaskConical, Zap, Boxes, ArrowRight, Hash, Info, ChevronRight, X, Clock, User, Tag, Calendar, LayoutList, Download, Upload, Printer, Eye, Edit3, Lock, Unlock, Ruler, Filter, Layers, ShoppingBag, Utensils } from 'lucide-react';
+import { Package, AlertCircle, History, Plus, Search, RefreshCcw, Check, FileText, FlaskConical, Zap, Boxes, ArrowRight, Hash, Info, ChevronRight, X, Clock, User, Tag, Calendar, LayoutList, Download, Upload, Printer, Eye, Edit3, Lock, Unlock, Ruler, Filter, Layers, ShoppingBag, Utensils, Truck as TruckIcon } from 'lucide-react';
 
 
 import { formatCurrency } from '../utils/formatters';
 import InventoryAdjustmentModal from '../components/InventoryAdjustmentModal';
 import AdvancedProductModal from '../components/AdvancedProductModal';
 import ImportModal from '../components/ImportModal';
+import WarehouseTransferModal from '../components/WarehouseTransferModal';
 
 const Inventory: React.FC = () => {
   const { t } = useTranslation();
@@ -22,6 +23,7 @@ const Inventory: React.FC = () => {
   const [showAdjustmentModal, setShowAdjustmentModal] = useState(false);
   const [showAdvancedModal, setShowAdvancedModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [showTransferModal, setShowTransferModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [businessTypeFilter, setBusinessTypeFilter] = useState<ProductType | 'all'>('all');
   const [itemTypeFilter, setItemTypeFilter] = useState<ItemType | 'all'>('all');
@@ -63,6 +65,47 @@ const Inventory: React.FC = () => {
     addMovement(newMovement);
     updateProduct(targetProduct.id, { stock: Math.max(0, newStock) });
     setShowAdjustmentModal(false);
+  };
+
+  const handleTransfer = (transfer: {
+    fromWarehouse: string;
+    toWarehouse: string;
+    items: { productId: string; quantity: number }[];
+    note: string;
+  }) => {
+    // In demo, we just add movements or show toast
+    transfer.items.forEach(item => {
+      const prod = products.find(p => p.id === item.productId);
+      if (prod) {
+        // Movement Out from FromWarehouse
+        addMovement({
+          id: `MOV-OUT-${Date.now()}-${item.productId}`,
+          productId: item.productId,
+          productName: prod.name,
+          type: 'out',
+          quantity: item.quantity,
+          uomId: prod.baseUOMId,
+          date: new Date().toISOString(),
+          performedBy: currentUser?.name || 'Systems Admin',
+          note: `Chuyển từ ${transfer.fromWarehouse} sang ${transfer.toWarehouse}: ${transfer.note}`
+        });
+        // Movement In to ToWarehouse
+        addMovement({
+          id: `MOV-IN-${Date.now()}-${item.productId}`,
+          productId: item.productId,
+          productName: prod.name,
+          type: 'in',
+          quantity: item.quantity,
+          uomId: prod.baseUOMId,
+          date: new Date().toISOString(),
+          performedBy: currentUser?.name || 'Systems Admin',
+          note: `Nhập từ kho ${transfer.fromWarehouse}: ${transfer.note}`
+        });
+      }
+    });
+
+    useStore.getState().showToast('Đã thực hiện chuyển kho nội bộ thành công!', 'success');
+    setShowTransferModal(false);
   };
 
   const handleSaveProduct = (newProd: Partial<Product>) => {
@@ -202,6 +245,13 @@ const Inventory: React.FC = () => {
           >
             <RefreshCcw size={18} />
             <span className="hidden sm:inline">{t('inventory.adjustment')}</span>
+          </button>
+          <button
+            onClick={() => setShowTransferModal(true)}
+            className="px-6 py-3 bg-white border border-slate-200 text-slate-800 font-bold rounded-xl flex items-center gap-2 shadow-sm hover:bg-slate-50 transition-all whitespace-nowrap"
+          >
+            <TruckIcon size={18} className="text-blue-500" />
+            <span className="hidden sm:inline">Chuyển kho</span>
           </button>
           <button
             onClick={() => setShowAdvancedModal(true)}
@@ -484,6 +534,7 @@ const Inventory: React.FC = () => {
 
       {showImportModal && <ImportModal entityName="Products" templateHeaders={['id', 'name', 'type', 'category', 'price', 'stock', 'barcode', 'printGroupId', 'status']} onImport={handleImport} onClose={() => setShowImportModal(false)} />}
       {showAdjustmentModal && <InventoryAdjustmentModal products={products} onClose={() => setShowAdjustmentModal(false)} onConfirm={handleAdjustment} />}
+      {showTransferModal && <WarehouseTransferModal products={products} onClose={() => setShowTransferModal(false)} onConfirm={handleTransfer} />}
       {showAdvancedModal && <AdvancedProductModal onClose={() => setShowAdvancedModal(false)} onSave={handleSaveProduct} />}
       {editingProduct && <AdvancedProductModal initialProduct={editingProduct} onClose={() => setEditingProduct(null)} onSave={handleSaveProduct} />}
     </div>

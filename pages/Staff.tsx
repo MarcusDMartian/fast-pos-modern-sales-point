@@ -51,21 +51,20 @@ interface LeaveRequest {
 
 // Mock data
 const MOCK_SHIFTS: Shift[] = [
-   { id: 'SH-001', employeeId: 'E1', employeeName: 'Nguyễn Văn A', date: '2024-12-31', startTime: '07:00', endTime: '15:00', type: 'morning', status: 'scheduled' },
-   { id: 'SH-002', employeeId: 'E2', employeeName: 'Trần Thị B', date: '2024-12-31', startTime: '15:00', endTime: '23:00', type: 'evening', status: 'scheduled' },
-   { id: 'SH-003', employeeId: 'E3', employeeName: 'Lê Văn C', date: '2024-12-31', startTime: '07:00', endTime: '23:00', type: 'full', status: 'scheduled' },
+   { id: 'SH-001', employeeId: 'E1', employeeName: 'Nguyễn Quản Lý', date: new Date().toISOString().split('T')[0], startTime: '07:00', endTime: '15:00', type: 'morning', status: 'scheduled' },
+   { id: 'SH-002', employeeId: 'E2', employeeName: 'Trần Thu Ngân', date: new Date().toISOString().split('T')[0], startTime: '15:00', endTime: '23:00', type: 'evening', status: 'scheduled' },
+   { id: 'SH-003', employeeId: 'E3', employeeName: 'Lê Phục Vụ', date: new Date().toISOString().split('T')[0], startTime: '07:00', endTime: '23:00', type: 'full', status: 'scheduled' },
 ];
 
 const MOCK_PAYROLL: PayrollRecord[] = [
-   { id: 'PAY-001', employeeId: 'E1', employeeName: 'Nguyễn Văn A', month: '2024-12', baseSalary: 8000000, overtime: 1200000, bonus: 500000, deductions: 700000, netPay: 9000000, status: 'pending' },
-   { id: 'PAY-002', employeeId: 'E2', employeeName: 'Trần Thị B', month: '2024-12', baseSalary: 7000000, overtime: 800000, bonus: 0, deductions: 600000, netPay: 7200000, status: 'paid' },
-   { id: 'PAY-003', employeeId: 'E3', employeeName: 'Lê Văn C', month: '2024-12', baseSalary: 10000000, overtime: 0, bonus: 2000000, deductions: 900000, netPay: 11100000, status: 'pending' },
+   { id: 'PAY-001', employeeId: 'E1', employeeName: 'Nguyễn Quản Lý', month: '2026-01', baseSalary: 25000000, overtime: 1200000, bonus: 500000, deductions: 700000, netPay: 26000000, status: 'pending' },
+   { id: 'PAY-002', employeeId: 'E2', employeeName: 'Trần Thu Ngân', month: '2026-01', baseSalary: 12000000, overtime: 800000, bonus: 0, deductions: 600000, netPay: 12200000, status: 'paid' },
+   { id: 'PAY-003', employeeId: 'E3', employeeName: 'Lê Phục Vụ', month: '2026-01', baseSalary: 8000000, overtime: 0, bonus: 2000000, deductions: 300000, netPay: 9700000, status: 'pending' },
 ];
 
 const MOCK_LEAVES: LeaveRequest[] = [
-   { id: 'LV-001', employeeId: 'E1', employeeName: 'Nguyễn Văn A', type: 'annual', startDate: '2025-01-01', endDate: '2025-01-03', reason: 'Nghỉ Tết', status: 'approved', approvedBy: 'Manager' },
-   { id: 'LV-002', employeeId: 'E2', employeeName: 'Trần Thị B', type: 'sick', startDate: '2024-12-28', endDate: '2024-12-29', reason: 'Ốm', status: 'approved' },
-   { id: 'LV-003', employeeId: 'E4', employeeName: 'Phạm Văn D', type: 'personal', startDate: '2025-01-05', endDate: '2025-01-05', reason: 'Việc gia đình', status: 'pending' },
+   { id: 'LV-001', employeeId: 'E1', employeeName: 'Nguyễn Quản Lý', type: 'annual', startDate: '2026-01-15', endDate: '2026-01-20', reason: 'Nghỉ du lịch', status: 'approved', approvedBy: 'Admin' },
+   { id: 'LV-002', employeeId: 'E2', employeeName: 'Trần Thu Ngân', type: 'sick', startDate: '2026-01-01', endDate: '2026-01-01', reason: 'Cảm cúm', status: 'approved' },
 ];
 
 const Staff: React.FC = () => {

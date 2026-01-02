@@ -9,8 +9,8 @@ import { formatCurrency, getCurrencySymbol } from '../utils/formatters';
 const Procurement: React.FC = () => {
   const { enterpriseConfig } = useStore();
   const [pos, setPos] = useState<PurchaseOrder[]>([
-    { id: 'PO-1001', supplierId: 'S1', supplierName: 'Coffee Farm Direct', date: '2025-05-10', total: 1500, status: 'Sent', items: [{ productId: 'SKU-1001', name: 'Espresso Beans', quantity: 10, cost: 150 }] },
-    { id: 'PO-1002', supplierId: 'S2', supplierName: 'Dairy Fresh Vietnam', date: '2025-05-08', total: 800, status: 'Received', items: [] },
+    { id: 'PO-20260101', supplierId: 'S1', supplierName: 'Cà Phê Cao Nguyên Dalat', date: '2026-01-01', total: 5250000, status: 'Sent', items: [{ productId: 'P01', name: 'Hạt Arabica Cầu Đất', quantity: 15, cost: 350000 }] },
+    { id: 'PO-20251231', supplierId: 'S2', supplierName: 'Lò Bánh Hội An', date: '2025-12-31', total: 2450000, status: 'Received', items: [] },
   ]);
 
   const [showCreatePO, setShowCreatePO] = useState(false);
@@ -54,8 +54,8 @@ const Procurement: React.FC = () => {
     <div className="p-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
         <div>
-          <h1 className="text-4xl font-extrabold text-slate-800 mb-2 tracking-tight">Procurement Hub</h1>
-          <p className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.2em]">Acquisition management & supplier logistics</p>
+          <h1 className="text-4xl font-extrabold text-slate-800 mb-2 tracking-tight">Trung tâm Thu mua</h1>
+          <p className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.2em]">Quản lý nhập hàng & nhà cung cấp</p>
         </div>
         <div className="flex items-center gap-4">
           <button
@@ -63,14 +63,14 @@ const Procurement: React.FC = () => {
             className="bg-white/40 backdrop-blur-xl text-slate-600 px-8 py-4 rounded-2xl font-bold flex items-center gap-3 border border-white/60 shadow-lg hover:bg-white transition-all scale-105 active:scale-95 text-[11px] uppercase tracking-wider"
           >
             <Package size={20} />
-            Inventory Receipt
+            Nhập hàng vào kho
           </button>
           <button
             onClick={() => setShowCreatePO(true)}
             className="bg-primary text-white px-10 py-4 rounded-2xl font-bold flex items-center gap-3 shadow-xl shadow-primary-glow hover:bg-slate-900 transition-all scale-110 active:scale-95 text-[11px] uppercase tracking-wider ml-2"
           >
             <Plus size={20} />
-            New Purchase Order
+            Tạo đơn mua hàng
           </button>
         </div>
       </div>
@@ -92,11 +92,11 @@ const Procurement: React.FC = () => {
           <table className="w-full text-left table-fixed min-w-[1000px] border-collapse">
             <thead>
               <tr className="bg-slate-900/5 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
-                <th className="p-10 pl-12 w-[180px]">Order ID</th>
-                <th className="p-10">Global Supplier</th>
-                <th className="p-10 w-[150px]">Issue Date</th>
-                <th className="p-10 w-[150px]">Tracking</th>
-                <th className="p-10 w-[200px] text-right pr-12">Capital Total</th>
+                <th className="p-10 pl-12 w-[180px]">Mã đơn hàng</th>
+                <th className="p-10">Nhà cung cấp</th>
+                <th className="p-10 w-[150px]">Ngày phát hành</th>
+                <th className="p-10 w-[150px]">Trạng thái</th>
+                <th className="p-10 w-[200px] text-right pr-12">Tổng tiền</th>
                 <th className="p-10 w-[120px] text-right sticky right-0"></th>
               </tr>
             </thead>

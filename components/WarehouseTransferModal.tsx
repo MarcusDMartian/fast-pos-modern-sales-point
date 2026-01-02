@@ -16,7 +16,6 @@ interface WarehouseTransferModalProps {
     }) => void;
 }
 
-// Mock warehouses
 const WAREHOUSES = [
     { id: 'WH-001', name: 'Kho Chính (HCM)', location: 'Quận 1, TP.HCM', type: 'main' },
     { id: 'WH-002', name: 'Kho Phụ (Bình Dương)', location: 'Thuận An, Bình Dương', type: 'secondary' },

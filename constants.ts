@@ -1,5 +1,9 @@
 
-import { Product, Table, Customer, Area, UOM, Branch, PrintGroup, Employee, Voucher, Supplier, LoyaltyConfig, PromotionRule } from './types';
+import {
+  Product, Table, Customer, Area, UOM, Branch, PrintGroup,
+  Employee, Voucher, Supplier, LoyaltyConfig, PromotionRule,
+  Order, Expense, StockMovement, AttendanceRecord, DraftOrder
+} from './types';
 
 export const COLORS = {
   main: '#0062FF',
@@ -21,14 +25,14 @@ export const MOCK_LOYALTY: LoyaltyConfig = {
 export const MOCK_PROMOTIONS: PromotionRule[] = [
   {
     id: 'PRM-001',
-    name: 'Combo Ăn Sáng Tiết Kiệm',
+    name: 'Combo Chào Buổi Sáng',
     type: 'fixed',
     value: 15000,
     applyTo: 'category',
     targetId: 'Snacks',
     schedule: {
-      startDate: '2025-01-01',
-      endDate: '2025-12-31',
+      startDate: '2026-01-01',
+      endDate: '2026-12-31',
       daysOfWeek: [1, 2, 3, 4, 5],
       happyHour: { start: '06:00', end: '10:00' }
     },
@@ -36,100 +40,128 @@ export const MOCK_PROMOTIONS: PromotionRule[] = [
   },
   {
     id: 'PRM-002',
-    name: 'Mua 2 Tặng 1 - Trà Trái Cây',
+    name: 'Happy Hour - Giảm 20%',
     type: 'percentage',
-    value: 33,
-    applyTo: 'category',
-    targetId: 'Tea',
-    schedule: {
-      startDate: '2025-06-01',
-      endDate: '2025-06-30',
-      daysOfWeek: [1, 2, 3, 4, 5, 6, 7]
-    },
-    isActive: true
-  },
-  {
-    id: 'PRM-003',
-    name: 'Khai Trương Chi Nhánh Mới',
-    type: 'percentage',
-    value: 15,
+    value: 20,
     applyTo: 'all',
     schedule: {
-      startDate: '2025-01-01',
-      endDate: '2025-02-28',
-      daysOfWeek: [1, 2, 3, 4, 5, 6, 7]
+      startDate: '2026-01-01',
+      endDate: '2026-12-31',
+      daysOfWeek: [1, 2, 3, 4, 5],
+      happyHour: { start: '14:00', end: '17:00' }
     },
     isActive: true
   }
 ];
 
 export const MOCK_EMPLOYEES: Employee[] = [
-  { id: 'E1', name: 'Nguyễn Văn Quản Lý', pin: '1234', role: 'Admin', avatar: 'https://i.pravatar.cc/150?u=alex', salary: 25000000 },
-  { id: 'E2', name: 'Lê Thị Thu Ngân', pin: '0000', role: 'Cashier', avatar: 'https://i.pravatar.cc/150?u=sarah', salary: 12000000 },
-  { id: 'E3', name: 'Lê Hoàng Nam', pin: '1111', role: 'Waiter', status: 'Active' },
-  { id: 'E4', name: 'Phạm Minh Thu', pin: '9999', role: 'Cashier', status: 'Active' },
+  { id: 'E1', name: 'Nguyễn Quản Lý', pin: '1234', role: 'Admin', avatar: 'https://i.pravatar.cc/150?u=admin', salary: 25000000, status: 'Active' },
+  { id: 'E2', name: 'Trần Thu Ngân', pin: '0000', role: 'Cashier', avatar: 'https://i.pravatar.cc/150?u=cashier', salary: 12000000, status: 'Active' },
+  { id: 'E3', name: 'Lê Phục Vụ', pin: '1111', role: 'Waiter', avatar: 'https://i.pravatar.cc/150?u=waiter', salary: 8000000, status: 'Active' },
 ];
 
 export const MOCK_BRANCHES: Branch[] = [
-  { id: 'B1', name: 'Fast POS Vietnam HQ', address: '789 Đường Lê Lợi, Quận 1, TP. HCM' },
-  { id: 'B2', name: 'Fast POS Landmark 81', address: 'Tầng 2, Landmark 81, Quận Bình Thạnh, TP. HCM' },
+  { id: 'B1', name: 'Fast POS HQ - Quận 1', address: '789 Lê Lợi, P. Bến Thành, Q.1, TP.HCM' },
+  { id: 'B2', name: 'Fast POS - Landmark 81', address: 'Vinhomes Central Park, Q.Bình Thạnh, TP.HCM' },
 ];
 
 export const MOCK_PRINT_GROUPS: PrintGroup[] = [
-  { id: 'pg1', name: 'Bếp Cơm' },
-  { id: 'pg2', name: 'Quầy Bar' },
-  { id: 'pg3', name: 'Hóa Đơn' },
+  { id: 'pg1', name: 'Máy in Bếp' },
+  { id: 'pg2', name: 'Máy in Quầy Bar' },
+  { id: 'pg3', name: 'Máy in Hóa đơn' },
 ];
 
 export const MOCK_UOMS: UOM[] = [
   { id: 'u1', code: 'pcs', name: 'Cái', category: 'quantity' },
   { id: 'u2', code: 'cup', name: 'Ly', category: 'volume' },
-  { id: 'u3', code: 'kg', name: 'Kilogram', category: 'weight' },
-  { id: 'u4', code: 'can', name: 'Lon', category: 'quantity' },
-  { id: 'u5', code: 'bottle', name: 'Chai', category: 'volume' },
-  { id: 'u6', code: 'bread', name: 'Ổ', category: 'quantity' },
+  { id: 'u3', code: 'kg', name: 'Kg', category: 'weight' },
+  { id: 'u4', code: 'set', name: 'Set', category: 'quantity' },
 ];
 
 export const MOCK_PRODUCTS: Product[] = [
-  { id: 'P01', name: 'Espresso Sữa Đá', barcode: '100001', type: 'fnb', itemType: 'finished', category: 'Coffee', image: 'https://images.unsplash.com/photo-1510591509098-f4fdc6d0ff04?w=400&h=400&fit=crop', baseUOMId: 'u2', units: [{ uomId: 'u2', type: 'base', conversionFactor: 1, price: 35000, isDefault: true }], price: 35000, stock: 999, hasLotTracking: false, status: 'active' },
-  { id: 'P02', name: 'Bạc Xỉu Sài Gòn', barcode: '100002', type: 'fnb', itemType: 'finished', category: 'Coffee', image: 'https://images.unsplash.com/photo-1541167760496-162955ed8a9f?w=400&h=400&fit=crop', baseUOMId: 'u2', units: [{ uomId: 'u2', type: 'base', conversionFactor: 1, price: 45000, isDefault: true }], price: 45000, stock: 999, hasLotTracking: false, status: 'active' },
-  { id: 'P03', name: 'Cà Phê Muối', barcode: '100003', type: 'fnb', itemType: 'finished', category: 'Coffee', image: 'https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=400&h=400&fit=crop', baseUOMId: 'u2', units: [{ uomId: 'u2', type: 'base', conversionFactor: 1, price: 55000, isDefault: true }], price: 55000, stock: 999, hasLotTracking: false, status: 'active' },
-  { id: 'P04', name: 'Trà Đào Cam Sả', barcode: '100004', type: 'fnb', itemType: 'finished', category: 'Tea', image: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=400&h=400&fit=crop', baseUOMId: 'u2', units: [{ uomId: 'u2', type: 'base', conversionFactor: 1, price: 52000, isDefault: true }], price: 52000, stock: 999, hasLotTracking: false, status: 'active' },
-  { id: 'P05', name: 'Trà Vải Lạnh', barcode: '100005', type: 'fnb', itemType: 'finished', category: 'Tea', image: 'https://images.unsplash.com/photo-1594631252845-29fc458695d7?w=400&h=400&fit=crop', baseUOMId: 'u2', units: [{ uomId: 'u2', type: 'base', conversionFactor: 1, price: 49000, isDefault: true }], price: 49000, stock: 999, hasLotTracking: false, status: 'active' },
-  { id: 'P06', name: 'Bánh Mì Thịt Nướng', barcode: '100006', type: 'fnb', itemType: 'finished', category: 'Snacks', image: 'https://images.unsplash.com/photo-1626074353765-517a681e40be?w=400&h=400&fit=crop', baseUOMId: 'u6', units: [{ uomId: 'u6', type: 'base', conversionFactor: 1, price: 35000, isDefault: true }], price: 35000, stock: 50, hasLotTracking: false, status: 'active' },
-  { id: 'P07', name: 'Bánh Sừng Bò Trứng Muối', barcode: '100007', type: 'fnb', itemType: 'finished', category: 'Snacks', image: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=400&h=400&fit=crop', baseUOMId: 'u1', units: [{ uomId: 'u1', type: 'base', conversionFactor: 1, price: 32000, isDefault: true }], price: 32000, stock: 45, hasLotTracking: false, status: 'active' },
-  { id: 'P08', name: 'Tiramisu Sen', barcode: '100008', type: 'fnb', itemType: 'finished', category: 'Desserts', image: 'https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?w=400&h=400&fit=crop', baseUOMId: 'u1', units: [{ uomId: 'u1', type: 'base', conversionFactor: 1, price: 65000, isDefault: true }], price: 65000, stock: 15, hasLotTracking: false, status: 'active' },
-  { id: 'P09', name: 'Nước Khoáng Lavie 500ml', barcode: '200009', type: 'retail', itemType: 'finished', category: 'Retail', image: 'https://images.unsplash.com/photo-1616031037011-087000171abe?w=400&h=400&fit=crop', baseUOMId: 'u5', units: [{ uomId: 'u5', type: 'base', conversionFactor: 1, price: 10000, isDefault: true }], price: 10000, stock: 200, hasLotTracking: true, status: 'active' },
-  { id: 'P10', name: 'Sữa Tươi Vinamilk 1L', barcode: '200010', type: 'retail', itemType: 'finished', category: 'Retail', image: 'https://images.unsplash.com/photo-1550583724-1255818c0533?w=400&h=400&fit=crop', baseUOMId: 'u5', units: [{ uomId: 'u5', type: 'base', conversionFactor: 1, price: 32000, isDefault: true }], price: 32000, stock: 60, hasLotTracking: true, status: 'active' },
+  { id: 'P01', name: 'Phê Sữa Đá Sài Gòn', barcode: '893001', type: 'fnb', itemType: 'finished', category: 'Coffee', image: 'https://images.unsplash.com/photo-1541167733022-ad936532ad45?w=500', baseUOMId: 'u2', units: [{ uomId: 'u2', type: 'base', conversionFactor: 1, price: 35000, isDefault: true }], price: 35000, stock: 150, hasLotTracking: false, status: 'active' },
+  { id: 'P02', name: 'Caramel Macchiato', barcode: '893002', type: 'fnb', itemType: 'finished', category: 'Coffee', image: 'https://images.unsplash.com/photo-1485808191679-5f63332eb75b?w=500', baseUOMId: 'u2', units: [{ uomId: 'u2', type: 'base', conversionFactor: 1, price: 55000, isDefault: true }], price: 55000, stock: 120, hasLotTracking: false, status: 'active' },
+  { id: 'P03', name: 'Trà Đào Cam Sả', barcode: '893003', type: 'fnb', itemType: 'finished', category: 'Tea', image: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=500', baseUOMId: 'u2', units: [{ uomId: 'u2', type: 'base', conversionFactor: 1, price: 45000, isDefault: true }], price: 45000, stock: 80, hasLotTracking: false, status: 'active' },
+  { id: 'P04', name: 'Trà Sen Vàng', barcode: '893004', type: 'fnb', itemType: 'finished', category: 'Tea', image: 'https://images.unsplash.com/photo-1594631252845-29fc458695d7?w=500', baseUOMId: 'u2', units: [{ uomId: 'u2', type: 'base', conversionFactor: 1, price: 49000, isDefault: true }], price: 49000, stock: 65, hasLotTracking: false, status: 'active' },
+  { id: 'P05', name: 'Croissant Bơ Pháp', barcode: '893005', type: 'fnb', itemType: 'finished', category: 'Desserts', image: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=500', baseUOMId: 'u1', units: [{ uomId: 'u1', type: 'base', conversionFactor: 1, price: 32000, isDefault: true }], price: 32000, stock: 40, hasLotTracking: false, status: 'active' },
+  { id: 'P06', name: 'Bánh Mì Hội An', barcode: '893006', type: 'fnb', itemType: 'finished', category: 'Snacks', image: 'https://images.unsplash.com/photo-1509722747041-07ecfcb39bb7?w=500', baseUOMId: 'u1', units: [{ uomId: 'u1', type: 'base', conversionFactor: 1, price: 39000, isDefault: true }], price: 39000, stock: 30, hasLotTracking: false, status: 'active' },
+  { id: 'P07', name: 'Matcha Latte', barcode: '893007', type: 'fnb', itemType: 'finished', category: 'Coffee', image: 'https://images.unsplash.com/photo-1515823064-d6e0c04616a7?w=500', baseUOMId: 'u2', units: [{ uomId: 'u2', type: 'base', conversionFactor: 1, price: 45000, isDefault: true }], price: 45000, stock: 50, hasLotTracking: false, status: 'active' },
+  { id: 'P08', name: 'Nước Suối 500ml', barcode: '893008', type: 'retail', itemType: 'finished', category: 'Retail', image: 'https://images.unsplash.com/photo-1616031037011-087000171abe?w=500', baseUOMId: 'u1', units: [{ uomId: 'u1', type: 'base', conversionFactor: 1, price: 15000, isDefault: true }], price: 15000, stock: 200, hasLotTracking: false, status: 'active' },
 ];
 
 export const MOCK_AREAS: Area[] = [
-  { id: 'A1', name: 'Tầng Trệt (Indoor)' },
-  { id: 'A2', name: 'Sân Vườn (Outdoor)' },
-  { id: 'A3', name: 'Phòng VIP (Lầu 1)' },
+  { id: 'A1', name: 'Sảnh Chính' },
+  { id: 'A2', name: 'Lầu 1 - VIP' },
+  { id: 'A3', name: 'Sân Thượng' },
 ];
 
 export const MOCK_TABLES: Table[] = [
-  { id: 'T1', number: '01', areaId: 'A1', status: 'available', capacity: 2 },
-  { id: 'T2', number: '02', areaId: 'A1', status: 'available', capacity: 4 },
-  { id: 'T3', number: '03', areaId: 'A1', status: 'available', capacity: 4 },
-  { id: 'T4', number: '11', areaId: 'A2', status: 'available', capacity: 2 },
-  { id: 'T5', number: '12', areaId: 'A2', status: 'available', capacity: 4 },
-  { id: 'T6', number: '13', areaId: 'A2', status: 'available', capacity: 6 },
-  { id: 'T7', number: 'V1', areaId: 'A3', status: 'available', capacity: 10 },
-  { id: 'T8', number: 'V2', areaId: 'A3', status: 'available', capacity: 8 },
+  { id: 'T1', number: '101', areaId: 'A1', status: 'available', capacity: 2 },
+  { id: 'T2', number: '102', areaId: 'A1', status: 'available', capacity: 4 },
+  { id: 'T3', number: '201', areaId: 'A2', status: 'available', capacity: 6 },
+  { id: 'T4', number: '301', areaId: 'A3', status: 'available', capacity: 4 },
 ];
 
 export const MOCK_CUSTOMERS: Customer[] = [
-  { id: 'C1', name: 'Nguyễn Minh Khoa', phone: '0901234567', type: 'VIP', tier: 'Hạng Vàng', balance: 500000, points: 25000, totalPointsAccumulated: 30000, totalPointsSpent: 5000, birthday: '1990-01-02' },
-  { id: 'C2', name: 'Trần Thị Thúy Chi', phone: '0912345678', type: 'Member', tier: 'Hạng Bạc', balance: 0, points: 8000, totalPointsAccumulated: 10000, totalPointsSpent: 2000, birthday: '1995-10-15' },
-  { id: 'C3', name: 'Phạm Hoàng Nam', phone: '0987654321', type: 'Member', tier: 'Hạng Đồng', balance: -150000, points: 1200, totalPointsAccumulated: 1200, totalPointsSpent: 0, birthday: '1988-05-20' },
-  { id: 'C4', name: 'Lê Văn Tùng', phone: '0908889999', type: 'VIP', tier: 'Hạng Kim Cương', balance: 2000000, points: 75000, totalPointsAccumulated: 100000, totalPointsSpent: 25000, birthday: '1985-12-31' },
-  { id: 'C5', name: 'Đặng Mai Phương', phone: '0933445566', type: 'Member', tier: 'Hạng Đồng', balance: 0, points: 450, totalPointsAccumulated: 450, totalPointsSpent: 0, birthday: '2000-08-12' },
-  { id: 'C6', name: 'Bùi Anh Tuấn', phone: '0944556677', type: 'Member', tier: 'Hạng Bạc', balance: -50000, points: 6500, totalPointsAccumulated: 8000, totalPointsSpent: 1500, birthday: '1992-03-25' },
+  { id: 'C1', name: 'Nguyễn Minh Khoa', phone: '0901234567', type: 'VIP', tier: 'Hạng Vàng', balance: 500000, points: 2500, totalPointsAccumulated: 15000, totalPointsSpent: 12500, birthday: '1990-01-02' },
+  { id: 'C2', name: 'Lê Diệu Linh', phone: '0912233445', type: 'Normal', tier: 'Hạng Bạc', balance: 0, points: 850, totalPointsAccumulated: 2000, totalPointsSpent: 1150, birthday: '1995-05-12' },
+  { id: 'C3', name: 'Trần Hoàng Nam', phone: '0988776655', type: 'VIP', tier: 'Hạng Kim Cương', balance: 2500000, points: 15000, totalPointsAccumulated: 50000, totalPointsSpent: 35000, birthday: '1988-12-25' },
 ];
 
 export const MOCK_SUPPLIERS: Supplier[] = [
-  { id: 'S1', name: 'Cà Phê Cao Nguyên Việt', code: 'SUP-001', contact: 'Nguyễn Văn A', phone: '0123456789', email: 'farm@kaizenkage.com', rating: 5, category: 'Raw Materials' },
-  { id: 'S2', name: 'Vinamilk Distribution', code: 'SUP-002', contact: 'Lê Thị B', phone: '0988776655', email: 'sales@vinamilk.com', rating: 5, category: 'Retail Goods' },
+  { id: 'S1', name: 'Cà Phê Cao Nguyên Dalat', code: 'SUP001', contact: 'Mr. An', phone: '0901112223', email: 'an@farm.com', rating: 5, category: 'Raw Materials' },
+  { id: 'S2', name: 'Lò Bánh Hội An', code: 'SUP002', contact: 'Ms. Hoa', phone: '0903334445', email: 'hoa@bakery.com', rating: 4, category: 'Food' },
+];
+
+export const MOCK_ORDERS: Order[] = [
+  {
+    id: 'ORD-001',
+    branchId: 'B1',
+    items: [
+      { ...MOCK_PRODUCTS[0], quantity: 2, selectedUomId: 'u2', selectedAttributes: [], totalPrice: 70000 }
+    ],
+    subtotal: 70000,
+    discountAmount: 0,
+    tax: 7000,
+    surcharge: 0,
+    total: 77000,
+    date: new Date().toISOString(),
+    status: 'completed',
+    paymentMethod: 'Cash',
+    serviceType: 'Dine-in',
+    tableId: 'T1',
+    customerId: 'C1',
+    createdBy: 'E2'
+  },
+  {
+    id: 'ORD-002',
+    branchId: 'B1',
+    items: [
+      { ...MOCK_PRODUCTS[1], quantity: 1, selectedUomId: 'u2', selectedAttributes: [], totalPrice: 55000 }
+    ],
+    subtotal: 55000,
+    discountAmount: 0,
+    tax: 5500,
+    surcharge: 0,
+    total: 60500,
+    date: new Date().toISOString(),
+    status: 'completed',
+    paymentMethod: 'Transfer',
+    serviceType: 'Take-away',
+    customerId: 'C2',
+    createdBy: 'E2'
+  }
+];
+
+export const MOCK_EXPENSES: Expense[] = [
+  { id: 'EXP-001', amount: 2500000, category: 'Vật tư', note: 'Nhập hạt cà phê Arabica', date: new Date().toISOString(), createdBy: 'E1' },
+];
+
+export const MOCK_MOVEMENTS: StockMovement[] = [
+  { id: 'MOV-001', productId: 'P01', productName: 'Phê Sữa Đá Sài Gòn', type: 'in', quantity: 100, uomId: 'u2', date: new Date().toISOString(), performedBy: 'E1', note: 'Nhập hàng đầu kỳ' },
+];
+
+export const MOCK_ATTENDANCE: AttendanceRecord[] = [
+  { id: 'ATT-001', employeeId: 'E2', branchId: 'B1', checkInTime: new Date(new Date().setHours(8, 0)).toISOString(), status: 'active', method: 'pin', deviceId: 'POS-01', timezone: 'ICT' },
+  { id: 'ATT-002', employeeId: 'E1', branchId: 'B1', checkInTime: new Date(new Date().setHours(7, 30)).toISOString(), status: 'active', method: 'pin', deviceId: 'POS-01', timezone: 'ICT' },
 ];

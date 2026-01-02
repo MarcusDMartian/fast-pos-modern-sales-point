@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MOCK_EMPLOYEES } from '../constants';
 import { Employee, AttendanceRecord } from '../types';
 import { Delete, Unlock, Fingerprint, Clock, CheckCircle2, UserCircle2, ArrowRight, AlertTriangle } from 'lucide-react';
 import { useStore } from '../store';
@@ -15,7 +14,7 @@ const StaffLockScreen: React.FC<StaffLockScreenProps> = ({ onUnlock }) => {
   const [pin, setPin] = useState('');
   const [error, setError] = useState(false);
   const [verifiedEmployee, setVerifiedEmployee] = useState<Employee | null>(null);
-  const { checkIn, showToast } = useStore();
+  const { employees, checkIn, showToast } = useStore();
 
   const handleNumberClick = (num: string) => {
     if (pin.length < 4) {
@@ -29,7 +28,7 @@ const StaffLockScreen: React.FC<StaffLockScreenProps> = ({ onUnlock }) => {
   };
 
   const handleVerify = () => {
-    const staff = MOCK_EMPLOYEES.find(e => e.pin === pin);
+    const staff = employees.find(e => e.pin === pin);
     if (staff) {
       setVerifiedEmployee(staff);
       setPin('');

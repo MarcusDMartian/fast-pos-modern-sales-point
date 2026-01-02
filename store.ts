@@ -8,7 +8,8 @@ import {
 } from './types';
 import {
     MOCK_PRODUCTS, MOCK_CUSTOMERS, MOCK_TABLES, MOCK_EMPLOYEES,
-    MOCK_BRANCHES, MOCK_UOMS, MOCK_PRINT_GROUPS, MOCK_AREAS, MOCK_LOYALTY
+    MOCK_BRANCHES, MOCK_UOMS, MOCK_PRINT_GROUPS, MOCK_AREAS, MOCK_LOYALTY,
+    MOCK_ORDERS, MOCK_EXPENSES, MOCK_MOVEMENTS, MOCK_ATTENDANCE, MOCK_PROMOTIONS
 } from './constants';
 
 interface AppState {
@@ -106,18 +107,18 @@ export const useStore = create<AppState>()(
                 products: state.products.map(p => p.id === id ? { ...p, ...updates } : p)
             })),
 
-            orders: [],
+            orders: MOCK_ORDERS,
             addOrder: (order) => set((state) => ({ orders: [order, ...state.orders] })),
             updateOrder: (id, updates) => set((state) => ({
                 orders: state.orders.map(o => o.id === id ? { ...o, ...updates } : o)
             })),
             setOrders: (orders) => set({ orders }),
 
-            expenses: [],
+            expenses: MOCK_EXPENSES,
             setExpenses: (expenses) => set({ expenses }),
             addExpense: (expense) => set((state) => ({ expenses: [expense, ...state.expenses] })),
 
-            movements: [],
+            movements: MOCK_MOVEMENTS,
             setMovements: (movements) => set({ movements }),
             addMovement: (movement) => set((state) => ({ movements: [movement, ...state.movements] })),
 
@@ -149,7 +150,7 @@ export const useStore = create<AppState>()(
             loyaltyConfig: MOCK_LOYALTY,
             setLoyaltyConfig: (loyaltyConfig) => set({ loyaltyConfig }),
 
-            promotions: [],
+            promotions: MOCK_PROMOTIONS,
             setPromotions: (promotions) => set({ promotions }),
 
             enterpriseConfig: {
@@ -196,7 +197,7 @@ export const useStore = create<AppState>()(
                 }, 2000);
             },
 
-            attendanceRecords: [],
+            attendanceRecords: MOCK_ATTENDANCE,
             checkIn: (record) => set((state) => ({
                 attendanceRecords: [record, ...state.attendanceRecords],
                 employees: state.employees.map(e => e.id === record.employeeId ? {
